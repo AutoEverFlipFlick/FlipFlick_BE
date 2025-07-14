@@ -17,6 +17,13 @@ repositories {
 	mavenCentral()
 }
 
+dependencyManagement {
+	imports {
+		// Spring Boot 3.5.x ↔ Spring Cloud 2025.0.x (Northfields) 호환
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:2025.0.0"
+	}
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -30,10 +37,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
 	// H2
-	//runtimeOnly 'com.h2database:h2'
+	runtimeOnly 'com.h2database:h2'
 
 	// MYSQL
-	implementation 'com.mysql:mysql-connector-j:9.1.0'
+	//implementation 'com.mysql:mysql-connector-j:9.1.0'
 
 	// Config Client
 	implementation 'org.springframework.cloud:spring-cloud-starter-config'
