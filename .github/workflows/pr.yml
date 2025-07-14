@@ -4,21 +4,20 @@ on:
   pull_request:
     types: [opened, reopened, ready_for_review]
 
-# 필요한 최소 권한만 부여
 permissions:
   pull-requests: write
 
 env:
   # 여기서 원하는 계정을 콤마 없이 하나만 지정
   ASSIGNEE: ${{ github.actor }}
-  # 리뷰어 후보 목록(콤마로 구분). 나를 포함해도 자동으로 걸러냅니다.
+  # 리뷰어 후보 목록(콤마로 구분). 나를 포함해도 자동으로 걸러냄
   REVIEWERS: reviewer1,reviewer2,reviewer3
 
 jobs:
   assign-and-request:
     runs-on: ubuntu-latest
     steps:
-      - name: Assign & request reviewers
+      - name: PR 리뷰어, 배정자 등록
         uses: actions/github-script@v7
         with:
           script: |
@@ -30,7 +29,7 @@ jobs:
 
             const prNumber = context.payload.pull_request.number;
 
-            // 1) Assignee 달기
+            // Assignee 달기
             await github.rest.issues.addAssignees({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -38,7 +37,7 @@ jobs:
               assignees: [assignee]
             });
 
-            // 2) Reviewers 요청
+            // Reviewers 요청
             if (reviewers.length > 0) {
               await github.rest.pulls.requestReviewers({
                 owner: context.repo.owner,
