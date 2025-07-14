@@ -2,16 +2,16 @@ name: Assign issue creator
 
 on:
   issues:
-    types: [opened]   # 새 이슈가 열릴 때만 트리거
+    types: [opened]
 
 permissions:
-  issues: write       # assignee를 달기 위한 권한
+  issues: write
 
 jobs:
   assign:
     runs-on: ubuntu-latest
     steps:
-      - name: Assign issue author
+      - name: 이슈 발행자 등록
         uses: actions/github-script@v7
         with:
           script: |
