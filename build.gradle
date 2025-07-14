@@ -35,6 +35,9 @@ dependencies {
 	// MYSQL
 	implementation 'com.mysql:mysql-connector-j:9.1.0'
 
+	// Config Client
+	implementation 'org.springframework.cloud:spring-cloud-starter-config'
+
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
