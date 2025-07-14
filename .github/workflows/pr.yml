@@ -1,50 +1,56 @@
-name: Assign PR owner & reviewers
+name: PR Assignee & 전체 Collaborators 리뷰 요청
 
 on:
   pull_request:
     types: [opened, reopened, ready_for_review]
 
 permissions:
-  pull-requests: write
-
-env:
-  # 여기서 원하는 계정을 콤마 없이 하나만 지정
-  ASSIGNEE: ${{ github.actor }}
-  # 리뷰어 후보 목록(콤마로 구분). 나를 포함해도 자동으로 걸러냄
-  REVIEWERS: reviewer1,reviewer2,reviewer3
+  contents: read         # repos.listCollaborators 호출용
+  issues: write          # 이슈(Assignee) 추가용
+  pull-requests: write   # 리뷰어 요청용
 
 jobs:
   assign-and-request:
     runs-on: ubuntu-latest
     steps:
-      - name: PR 리뷰어, 배정자 등록
+      - name: Assign 및 리뷰어 일괄 요청
         uses: actions/github-script@v7
         with:
           script: |
-            const assignee = process.env.ASSIGNEE;
-            const reviewers = process.env.REVIEWERS
-                              .split(',')
-                              .map(r => r.trim())
-                              .filter(r => r && r !== assignee);
-
+            const { owner, repo } = context.repo;
             const prNumber = context.payload.pull_request.number;
+            const prAuthor = context.payload.pull_request.user.login;
 
-            // Assignee 달기
+            // 1) Assignee 지정 (PR 연 사람을 지정)
             await github.rest.issues.addAssignees({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+              owner,
+              repo,
               issue_number: prNumber,
-              assignees: [assignee]
+              assignees: [prAuthor]
             });
 
-            // Reviewers 요청
-            if (reviewers.length > 0) {
+            // 2) 리포지토리 Collaborators 전체 조회
+            const collaborators = await github.paginate(
+              github.rest.repos.listCollaborators,
+              { owner, repo, affiliation: 'all' }
+            );
+            const allLogins = collaborators.map(u => u.login);
+
+            // 3) PR 작성자만 제외
+            const reviewers = allLogins.filter(login => login !== prAuthor);
+            if (reviewers.length === 0) {
+              core.info('등록할 리뷰어가 없습니다.');
+              return;
+            }
+
+            // 4) 최대 15명씩 나눠서 리뷰 요청 (API 제한)
+            const chunkSize = 15;
+            for (let i = 0; i < reviewers.length; i += chunkSize) {
+              const chunk = reviewers.slice(i, i + chunkSize);
               await github.rest.pulls.requestReviewers({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
+                owner,
+                repo,
                 pull_number: prNumber,
-                reviewers
+                reviewers: chunk
               });
-            } else {
-              core.info('리뷰어 목록이 없거나 모두 필터링되었습니다.');
             }
