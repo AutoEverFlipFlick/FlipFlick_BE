@@ -4,6 +4,7 @@ import com.flipflick.backend.common.exception.BadRequestException;
 import com.flipflick.backend.common.response.ApiResponse;
 import com.flipflick.backend.common.response.ErrorStatus;
 import com.flipflick.backend.common.response.SuccessStatus;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name="HealthCheck", description = "HealthCheck 관련 API 입니다.")
 public class HealthCheckController {
 
+    @Hidden
     // 응답 시 데이터 반환 없이 응답코드, 응답 메세지만 보낼때
     @GetMapping("/health-check")
     public ResponseEntity<ApiResponse<Void>> healthCheck() {
@@ -21,6 +23,7 @@ public class HealthCheckController {
         return ApiResponse.success_only(SuccessStatus.SEND_HEALTH_SUCCESS);
     }
 
+    @Hidden
     // 응답 시 데이터 반환 과 함께 응답코드, 응답 메세지를 보낼때
     @GetMapping("/health-check-data")
     public ResponseEntity<ApiResponse<String>> healthCheckData() {
@@ -29,6 +32,7 @@ public class HealthCheckController {
         return ApiResponse.success(SuccessStatus.SEND_HEALTH_SUCCESS, "OK");
     }
 
+    @Hidden
     // 예외처리 예제
     @GetMapping("/exception-test/{data}")
     public ResponseEntity<ApiResponse<Void>> healthCheckData(@PathVariable("data") String data) {

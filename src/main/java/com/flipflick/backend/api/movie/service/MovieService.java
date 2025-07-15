@@ -4,14 +4,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.flipflick.backend.api.movie.dto.*;
 import com.flipflick.backend.api.movie.entity.*;
 import com.flipflick.backend.api.movie.repository.*;
+import com.flipflick.backend.common.exception.BadRequestException;
+import com.flipflick.backend.common.exception.InternalServerException;
+import com.flipflick.backend.common.response.ErrorStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -92,15 +98,23 @@ public class MovieService {
                         .queryParam("append_to_response", "videos,images,watch/providers,release_dates,credits")
                         .build(tmdbId))
                 .retrieve()
+                .onStatus(status -> status == HttpStatus.NOT_FOUND,
+                        resp -> Mono.error(new BadRequestException(ErrorStatus.NOT_REGISTER_MOVIE_EXCEPTION.getMessage())))
                 .bodyToMono(JsonNode.class)
                 .block();
 
         if (root == null) {
-            throw new RuntimeException("TMDB 응답이 없습니다.");
+            throw new InternalServerException(ErrorStatus.NO_RESPONSE_TMDB_EXCEPTION.getMessage());
         }
 
         // 개봉일 추출
-        LocalDate relDate = LocalDate.parse(root.get("release_date").asText());
+        String releaseDateText = root.path("release_date").asText(null);
+
+        LocalDate relDate = parseDate(releaseDateText);
+        if (relDate == null) {
+            throw new BadRequestException(ErrorStatus.NOT_RELEASE_MOVIE_EXCEPTION.getMessage());
+        }
+
         int productionYear = relDate.getYear();
 
         // 한국 연령 등급 추출
@@ -204,6 +218,15 @@ public class MovieService {
                             .movie(movie)
                             .build()
             );
+        }
+    }
+
+    private LocalDate parseDate(String text) {
+        if (text == null || text.isBlank()) return null;
+        try {
+            return LocalDate.parse(text);
+        } catch (DateTimeParseException e) {
+            return null;
         }
     }
 
