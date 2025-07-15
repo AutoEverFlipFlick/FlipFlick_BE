@@ -1,5 +1,8 @@
 name: Auto Close Issues on dev merge
 
+permissions:
+  issues: write
+
 on:
   pull_request:
     types: [closed]
