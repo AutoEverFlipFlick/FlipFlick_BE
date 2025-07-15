@@ -172,8 +172,6 @@ public class MovieService {
         }
 
         // 이미지 저장
-        root.path("images").path("posters")
-                .forEach(img -> addImage(movie, img.path("file_path").asText(null)));
         root.path("images").path("backdrops")
                 .forEach(img -> addImage(movie, img.path("file_path").asText(null)));
 
