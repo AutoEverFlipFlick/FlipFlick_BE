@@ -18,6 +18,8 @@ public enum SuccessStatus {
     SEND_HEALTH_SUCCESS(HttpStatus.OK,"서버 상태 OK"),
     SEND_MOVIE_DETAIL_SUCCESS(HttpStatus.OK,"영화 상세 조회 성공"),
     SEND_MOVIE_LIST_SUCCESS(HttpStatus.OK,"영화 리스트 조회 성공"),
+    SEND_CAST_LIST_SUCCESS(HttpStatus.OK,"배우 리스트 조회 성공"),
+    SEND_CAST_DETAIL_SUCCESS(HttpStatus.OK,"배우 상세 조회 성공"),
 
     /**
      * 201
