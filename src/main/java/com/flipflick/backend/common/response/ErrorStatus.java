@@ -39,7 +39,7 @@ public enum ErrorStatus {
     /**
      * 500 SERVER_ERROR
      */
-    PASSPORT_SIGN_ERROR_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,"Passport 서명 검증 중 오류가 발생했습니다."),
+    NO_RESPONSE_TMDB_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "데이터 조회 중 에러가 발생하였습니다."),
     ;
 
     private final HttpStatus httpStatus;
