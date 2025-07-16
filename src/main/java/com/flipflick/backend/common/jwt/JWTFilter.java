@@ -84,6 +84,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 .id(member.getId())
                 .email(member.getEmail())
                 .password(member.getPassword())
+                .role(member.getRole())
                 .build();
 
 
