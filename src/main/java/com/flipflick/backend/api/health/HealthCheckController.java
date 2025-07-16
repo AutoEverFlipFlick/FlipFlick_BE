@@ -17,7 +17,7 @@ public class HealthCheckController {
 
     @Hidden
     // 응답 시 데이터 반환 없이 응답코드, 응답 메세지만 보낼때
-    @GetMapping("/health-check")
+    @GetMapping("/health")
     public ResponseEntity<ApiResponse<Void>> healthCheck() {
 
         return ApiResponse.success_only(SuccessStatus.SEND_HEALTH_SUCCESS);
