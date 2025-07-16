@@ -67,7 +67,7 @@ public class MemberController {
                 securityMember.getEmail(),
                 requestDto.getNickname()
         );
-        return ApiResponse.success(SuccessStatus.UPDATE_NICKNAME_SUCCESS, null);
+        return ApiResponse.success_only(SuccessStatus.UPDATE_NICKNAME_SUCCESS);
     }
 
 
@@ -82,12 +82,13 @@ public class MemberController {
                 securityMember.getEmail(),
                 requestDto
         );
-        return ApiResponse.success(SuccessStatus.UPDATE_PASSWORD_SUCCESS, null);
+        return ApiResponse.success_only(SuccessStatus.UPDATE_PASSWORD_SUCCESS);
     }
 
     // 회원 정보 조회
+    @Operation(summary = "비밀번호 변경 API", description = "회원 정보를 조회합니다.")
     @GetMapping("/user-info")
-    public ResponseEntity<?> getMemberInfo(@AuthenticationPrincipal SecurityMember securityMember) {
+    public ResponseEntity<ApiResponse<MemberResponseDto>> getMemberInfo(@AuthenticationPrincipal SecurityMember securityMember) {
 
         Member member = memberService.getMemberInfo(securityMember.getId());
         MemberResponseDto memberResponseDto = MemberResponseDto.of(member);

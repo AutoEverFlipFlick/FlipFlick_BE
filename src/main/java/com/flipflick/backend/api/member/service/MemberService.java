@@ -72,7 +72,7 @@ public class MemberService {
     public void updateNickname(String email, String nickname) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage()));
-        member.setNickname(nickname);
+        member.updateNickname(nickname);
     }
 
     // 비밀번호 변경
@@ -86,7 +86,7 @@ public class MemberService {
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage()));
 
         String encodedPassword = passwordEncoder.encode(request.getPassword());
-        member.setPassword(encodedPassword);
+        member.updatePassword(encodedPassword);
     }
 
 

@@ -48,10 +48,10 @@ public class Member extends BaseTimeEntity {
     }
 
     //닉네임 변경
-    public void setNickname(String nickname) { this.nickname = nickname; }
+    public void updateNickname(String nickname) { this.nickname = nickname; }
 
     // 비밀번호 변경
-    public void setPassword(String password) { this.password = password; }
+    public void updatePassword(String password) { this.password = password; }
 
 }
 
