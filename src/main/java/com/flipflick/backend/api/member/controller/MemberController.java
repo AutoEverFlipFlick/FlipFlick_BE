@@ -1,9 +1,9 @@
 package com.flipflick.backend.api.member.controller;
 
-import com.flipflick.backend.api.member.dto.LoginRequestDto;
-import com.flipflick.backend.api.member.dto.LoginResponseDto;
-import com.flipflick.backend.api.member.dto.MemberSignupRequestDto;
+import com.flipflick.backend.api.member.dto.*;
+import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.service.MemberService;
+import com.flipflick.backend.common.config.security.SecurityMember;
 import com.flipflick.backend.common.response.ApiResponse;
 import com.flipflick.backend.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +14,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -51,6 +53,45 @@ public class MemberController {
         response.addCookie(cookie);
 
         return ApiResponse.success(SuccessStatus.SEND_LOGIN_SUCCESS,loginResponseDto);
+    }
+
+
+    // 마이페이지 닉네임 변경
+    @Operation(summary = "닉네임 변경 API", description = "사용자의 닉네임을 수정합니다.")
+    @PutMapping("/nickname")
+    public ResponseEntity<ApiResponse<Void>> updateNickname(
+            @Valid @RequestBody NicknameUpdateRequestDto requestDto,
+            @AuthenticationPrincipal SecurityMember securityMember
+    ) {
+        memberService.updateNickname(
+                securityMember.getEmail(),
+                requestDto.getNickname()
+        );
+        return ApiResponse.success(SuccessStatus.UPDATE_NICKNAME_SUCCESS, null);
+    }
+
+
+    // 마이페이지 비밀번호 변경
+    @Operation(summary = "비밀번호 변경 API", description = "사용자의 비밀번호를 변경합니다.")
+    @PutMapping("/password")
+    public ResponseEntity<ApiResponse<Void>> updatePassword(
+            @Valid @RequestBody PasswordUpdateRequestDto requestDto,
+            @AuthenticationPrincipal SecurityMember securityMember
+    ) {
+        memberService.updatePassword(
+                securityMember.getEmail(),
+                requestDto
+        );
+        return ApiResponse.success(SuccessStatus.UPDATE_PASSWORD_SUCCESS, null);
+    }
+
+    // 회원 정보 조회
+    @GetMapping("/user-info")
+    public ResponseEntity<?> getMemberInfo(@AuthenticationPrincipal SecurityMember securityMember) {
+
+        Member member = memberService.getMemberInfo(securityMember.getId());
+        MemberResponseDto memberResponseDto = MemberResponseDto.of(member);
+        return ApiResponse.success(SuccessStatus.SEND_LOGIN_SUCCESS, memberResponseDto);
     }
 
 

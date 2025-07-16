@@ -47,7 +47,11 @@ public class Member extends BaseTimeEntity {
         this.refreshTokenExpiration = LocalDateTime.now().plus(Duration.ofMillis(expireMs));
     }
 
+    //닉네임 변경
+    public void setNickname(String nickname) { this.nickname = nickname; }
 
+    // 비밀번호 변경
+    public void setPassword(String password) { this.password = password; }
 
 }
 
