@@ -1,6 +1,9 @@
 package com.flipflick.backend.common.jwt;
 
-import com.flipflick.backend.common.exception.UnauthorizedException;
+import com.flipflick.backend.api.member.entity.Member;
+import com.flipflick.backend.api.member.repository.MemberRepository;
+import com.flipflick.backend.common.config.security.SecurityMember;
+import com.flipflick.backend.common.exception.BadRequestException;
 import com.flipflick.backend.common.response.ErrorStatus;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -9,22 +12,24 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
-    private final CustomUserDetailsService userDetailsService;
+    private final MemberRepository memberRepository;
 
-    public JWTFilter(JWTUtil jwtUtil, CustomUserDetailsService userDetailsService) {
+    public JWTFilter(JWTUtil jwtUtil, MemberRepository memberRepository) {
         this.jwtUtil = jwtUtil;
-        this.userDetailsService = userDetailsService;
+        this.memberRepository = memberRepository;
     }
 
     @Override
@@ -68,12 +73,24 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
 
-        String email = jwtUtil.getEmail(accessToken);
-        CustomUserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
 
 
-        Authentication authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        Member member = memberRepository.findById(jwtUtil.getId(accessToken))
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage()));
+
+
+        SecurityMember securityMember = SecurityMember.builder()
+                .id(member.getId())
+                .email(member.getEmail())
+                .password(member.getPassword())
+                .build();
+
+
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(member.getRole().name()));
+
+
+        Authentication authToken = new UsernamePasswordAuthenticationToken(securityMember, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);

@@ -1,10 +1,9 @@
 package com.flipflick.backend.common.config.security;
 
-import com.flipflick.backend.common.jwt.CustomUserDetailsService;
+import com.flipflick.backend.api.member.repository.MemberRepository;
 import com.flipflick.backend.common.jwt.JWTFilter;
 import com.flipflick.backend.common.jwt.JWTUtil;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,26 +15,27 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Collections;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final AuthenticationConfiguration authenticationConfiguration;
+
     private final JWTUtil jwtUtil;
-    private final CustomUserDetailsService customUserDetailsService;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration,JWTUtil jwtUtil, CustomUserDetailsService customUserDetailsService) {
+    private final MemberRepository memberRepository;
 
-        this.authenticationConfiguration = authenticationConfiguration;
+    public SecurityConfig(JWTUtil jwtUtil, MemberRepository memberRepository) {
+
+
         this.jwtUtil = jwtUtil;
+        this.memberRepository = memberRepository;
 
-        this.customUserDetailsService = customUserDetailsService;
     }
 
 
@@ -64,7 +64,10 @@ public class SecurityConfig {
 
                         CorsConfiguration configuration = new CorsConfiguration();
 
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                        configuration.setAllowedOrigins(List.of(
+                                "http://localhost:3000",
+                                "http://localhost:5173"
+                        ));
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);
                         configuration.setAllowedHeaders(Collections.singletonList("*"));
@@ -104,7 +107,7 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
 
         http
-                .addFilterBefore(new JWTFilter(jwtUtil, customUserDetailsService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JWTFilter(jwtUtil, memberRepository), UsernamePasswordAuthenticationFilter.class);
 
 
         http

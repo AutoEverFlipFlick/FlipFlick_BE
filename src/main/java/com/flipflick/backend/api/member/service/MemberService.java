@@ -54,8 +54,8 @@ public class MemberService {
         }
 
         // 3. JWT 생성
-        String accessToken = jwtUtil.createJwt("access", member.getEmail(), member.getRole().name(), 1000 * 30L);
-        String refreshToken = jwtUtil.createJwt("refresh", member.getEmail(), member.getRole().name(), 1000L * 60 * 60 * 24 * 7);
+        String accessToken = jwtUtil.createJwt("access", member.getId(), member.getRole().name(), 1000 * 60 * 30L);
+        String refreshToken = jwtUtil.createJwt("refresh", member.getId(), member.getRole().name(), 1000L * 60 * 60 * 24 * 7);
 
         // 4. Refresh 토큰 저장 (DB에)
         member.updateRefreshToken(refreshToken, 1000L * 60 * 60 * 24 * 7);
