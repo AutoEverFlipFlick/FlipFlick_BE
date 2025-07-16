@@ -1,13 +1,12 @@
 package com.flipflick.backend.api.member.service;
 
-import com.flipflick.backend.api.member.dto.LoginRequestDto;
-import com.flipflick.backend.api.member.dto.LoginResponseDto;
-import com.flipflick.backend.api.member.dto.MemberSignupRequestDto;
+import com.flipflick.backend.api.member.dto.*;
 import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.repository.MemberRepository;
 import com.flipflick.backend.common.exception.BadRequestException;
 import com.flipflick.backend.common.jwt.JWTUtil;
 import com.flipflick.backend.common.response.ErrorStatus;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -68,5 +67,33 @@ public class MemberService {
     }
 
 
+    // 닉네임 변경
+    @Transactional
+    public void updateNickname(String email, String nickname) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage()));
+        member.updateNickname(nickname);
+    }
 
+    // 비밀번호 변경
+    @Transactional
+    public void updatePassword(String email, @Valid PasswordUpdateRequestDto request) {
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new BadRequestException(ErrorStatus.PASSWORD_MISMATCH_EXCEPTION.getMessage());
+        }
+
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage()));
+
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        member.updatePassword(encodedPassword);
+    }
+
+
+    public Member getMemberInfo(Long userId) {
+
+        Member member = memberRepository.findById(userId).orElseThrow(()-> new BadRequestException(
+                ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage()));
+        return member;
+    }
 }
