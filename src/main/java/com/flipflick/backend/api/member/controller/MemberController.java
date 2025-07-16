@@ -86,7 +86,7 @@ public class MemberController {
     }
 
     // 회원 정보 조회
-    @Operation(summary = "비밀번호 변경 API", description = "회원 정보를 조회합니다.")
+    @Operation(summary = "회원정보 조회 API", description = "회원 정보를 조회합니다.")
     @GetMapping("/user-info")
     public ResponseEntity<ApiResponse<MemberResponseDto>> getMemberInfo(@AuthenticationPrincipal SecurityMember securityMember) {
 
