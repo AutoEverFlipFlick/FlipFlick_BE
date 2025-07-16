@@ -20,6 +20,9 @@ public enum ErrorStatus {
     PASSWORD_MISMATCH_EXCEPTION(HttpStatus.BAD_REQUEST, "비밀번호와 비밀번호 확인 값이 일치하지 않습니다."),
     INVALID_PASSWORD_EXCEPTION(HttpStatus.BAD_REQUEST, "비밀번호가 올바르지 않습니다."),
 
+    NOT_RELEASE_MOVIE_EXCEPTION(HttpStatus.BAD_REQUEST,"아직 개봉되지 않은 영화 입니다."),
+    NOT_REGISTER_MOVIE_EXCEPTION(HttpStatus.BAD_REQUEST, "존재하지 않는 영화 입니다."),
+    NOT_REGISTER_CAST_EXCEPTION(HttpStatus.BAD_REQUEST,"존재하지 않는 배우 입니다."),
 
     /**
      * 401 UNAUTHORIZED
@@ -43,7 +46,7 @@ public enum ErrorStatus {
     /**
      * 500 SERVER_ERROR
      */
-    PASSPORT_SIGN_ERROR_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,"Passport 서명 검증 중 오류가 발생했습니다."),
+    NO_RESPONSE_TMDB_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "데이터 조회 중 에러가 발생하였습니다."),
     ;
 
     private final HttpStatus httpStatus;
