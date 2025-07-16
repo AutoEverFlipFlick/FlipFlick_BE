@@ -45,6 +45,7 @@ public class SearchService {
                     .totalPages(0)
                     .page(searchRequestDTO.getPage())
                     .size(0)
+                    .isLast(true)
                     .content(Collections.emptyList())
                     .build();
         }
@@ -67,11 +68,14 @@ public class SearchService {
                         .build())
                 .collect(Collectors.toList());
 
+        boolean isLast = tmdb.getPage() >= tmdb.getTotalPages();
+
         return MovieListPageResponseDTO.builder()
                 .totalElements(tmdb.getTotalResults())
                 .totalPages(tmdb.getTotalPages())
                 .page(tmdb.getPage())
                 .size(content.size())
+                .isLast(isLast)
                 .content(content)
                 .build();
     }
@@ -92,6 +96,7 @@ public class SearchService {
                     .totalPages(0)
                     .page(searchRequestDTO.getPage())
                     .size(0)
+                    .isLast(true)
                     .content(Collections.emptyList())
                     .build();
         }
@@ -101,11 +106,14 @@ public class SearchService {
                 .map(this::toCastDto)
                 .collect(Collectors.toList());
 
+        boolean isLast = tmdb.getPage() >= tmdb.getTotalPages();
+
         return CastListPageResponseDTO.builder()
                 .totalElements(tmdb.getTotalResults())
                 .totalPages(tmdb.getTotalPages())
                 .page(tmdb.getPage())
                 .size(content.size())
+                .isLast(isLast)
                 .content(content)
                 .build();
     }

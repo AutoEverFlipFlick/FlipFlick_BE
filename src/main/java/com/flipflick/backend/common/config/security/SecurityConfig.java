@@ -3,13 +3,14 @@ package com.flipflick.backend.common.config.security;
 import com.flipflick.backend.api.member.repository.MemberRepository;
 import com.flipflick.backend.common.jwt.JWTFilter;
 import com.flipflick.backend.common.jwt.JWTUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,109 +18,87 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-
     private final JWTUtil jwtUtil;
-
     private final MemberRepository memberRepository;
 
     public SecurityConfig(JWTUtil jwtUtil, MemberRepository memberRepository) {
-
-
         this.jwtUtil = jwtUtil;
         this.memberRepository = memberRepository;
-
     }
 
-
-    //AuthenticationManager Bean 등록
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-
-        return configuration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        corsConfiguration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "http://localhost:8080"
+        ));
+        corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
+        corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
+        corsConfiguration.setAllowCredentials(true);
+        corsConfiguration.setMaxAge(3600L);
+        corsConfiguration.setExposedHeaders(Collections.singletonList("Authorization"));
+
+        UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
+        urlBasedCorsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);
+        return urlBasedCorsConfigurationSource;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         http
-                .cors((corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
+                .cors(withDefaults())
 
-                    @Override
-                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+                // CSRF, form-login, basic-auth 모두 비활성화
+                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
 
-                        CorsConfiguration configuration = new CorsConfiguration();
+                .sessionManagement(sm -> sm
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                        configuration.setAllowedOrigins(List.of(
-                                "http://localhost:3000",
-                                "http://localhost:5173"
-                        ));
-                        configuration.setAllowedMethods(Collections.singletonList("*"));
-                        configuration.setAllowCredentials(true);
-                        configuration.setAllowedHeaders(Collections.singletonList("*"));
-                        configuration.setMaxAge(3600L);
+                .headers(headers -> headers
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)  // ← deprecated 아님 :contentReference[oaicite:0]{index=0}
+                )
 
-                        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+                .addFilterBefore(
+                        new JWTFilter(jwtUtil, memberRepository),
+                        UsernamePasswordAuthenticationFilter.class
+                )
 
-                        return configuration;
-                    }
-                })));
-
-
-        http
-                .csrf((auth) ->auth.disable());
-
-        http
-                .formLogin((auth) -> auth.disable());
-
-        http
-                .httpBasic((auth) -> auth.disable());
-
-        http
-                .authorizeHttpRequests((auth) -> auth
+                // 인가(Authorization) 설정
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/v1/member/login",  "/api/v1/member/signup",
-                                "/api/v1/member/reissue",
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-resources/**",
-                                "/webjars/**",
-                                "/h2-console/**"
-                        ).permitAll()
-                        .requestMatchers("/admin").hasRole("ADMIN")
-                        .anyRequest().authenticated());
-
-        http
-                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
-
-        http
-                .addFilterBefore(new JWTFilter(jwtUtil, memberRepository), UsernamePasswordAuthenticationFilter.class);
-
-
-        http
-                .sessionManagement((session) -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                                "/api/v1/member/login", "/api/v1/member/signup", "/api/v1/member/reissue", "/v3/api-docs/**",
+                                "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/h2-console/**").permitAll() // 회원, 스웨거, H2 인증 허가
+                        .requestMatchers("/admin").hasRole("ADMIN") // 관리자 페이지 Role 체크
+                        .requestMatchers("/api/v1/search/movie", "/api/v1/search/cast").permitAll() // 검색 인증 허가
+                        .requestMatchers("/api/v1/movie/view", "/api/v1/cast/view").permitAll() // 영화, 배우 상세 조회 인증 허가
+                        .anyRequest().authenticated()
+                );
 
         return http.build();
-
-
-
     }
-
 }
-
-
