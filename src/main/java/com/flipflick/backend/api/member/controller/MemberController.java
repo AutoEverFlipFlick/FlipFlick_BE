@@ -2,6 +2,7 @@ package com.flipflick.backend.api.member.controller;
 
 import com.flipflick.backend.api.member.dto.*;
 import com.flipflick.backend.api.member.entity.Member;
+import com.flipflick.backend.api.member.service.KakaoAuthService;
 import com.flipflick.backend.api.member.service.MemberService;
 import com.flipflick.backend.common.config.security.SecurityMember;
 import com.flipflick.backend.common.response.ApiResponse;
@@ -15,7 +16,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
@@ -27,6 +27,7 @@ import java.io.IOException;
 public class MemberController {
 
     private final MemberService memberService;
+    private final KakaoAuthService kakaoAuthService;
 
     @Operation(
             summary = "이메일 회원가입 API", description = "회원정보를 받아 사용자를 등록합니다.")
@@ -106,6 +107,25 @@ public class MemberController {
         MemberResponseDto memberResponseDto = MemberResponseDto.of(member);
         return ApiResponse.success(SuccessStatus.SEND_LOGIN_SUCCESS, memberResponseDto);
     }
+
+    @Operation(
+            summary = "카카오톡 로그인 API", description = "카카오톡 로그인")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "카카오톡 로그인 성공")
+    })
+    @PostMapping("/kakao")
+    public ResponseEntity<ApiResponse<LoginResponseDto>> kakaoLogin(@RequestBody KakaoCodeRequestDto requestDto,HttpServletResponse response) {
+        LoginResponseDto loginResponse = kakaoAuthService.kakaoLogin(requestDto.getCode());
+
+        Cookie cookie = new Cookie("refresh", loginResponse.getRefreshToken());
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60 * 24 * 7);
+        response.addCookie(cookie);
+
+        return ApiResponse.success(SuccessStatus.SEND_KAKA_LOGIN_SUCCESS, loginResponse);
+    }
+
 
 
 }
