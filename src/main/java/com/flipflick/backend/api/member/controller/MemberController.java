@@ -4,6 +4,7 @@ import com.flipflick.backend.api.member.dto.*;
 import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.service.KakaoAuthService;
 import com.flipflick.backend.api.member.service.MemberService;
+import com.flipflick.backend.api.member.service.NaverAuthService;
 import com.flipflick.backend.common.config.security.SecurityMember;
 import com.flipflick.backend.common.response.ApiResponse;
 import com.flipflick.backend.common.response.SuccessStatus;
@@ -26,6 +27,7 @@ public class MemberController {
 
     private final MemberService memberService;
     private final KakaoAuthService kakaoAuthService;
+    private final NaverAuthService naverAuthService;
 
     @Operation(
             summary = "이메일 회원가입 API", description = "회원정보를 받아 사용자를 등록합니다.")
@@ -112,6 +114,24 @@ public class MemberController {
         response.addCookie(cookie);
 
         return ApiResponse.success(SuccessStatus.SEND_KAKA_LOGIN_SUCCESS, loginResponse);
+    }
+
+    @Operation(
+            summary = "네이버 로그인 API", description = "네이버 로그인")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "네이버 로그인 성공")
+    })
+    @PostMapping("/naver")
+    public ResponseEntity<ApiResponse<LoginResponseDto>> naverLogin(@RequestBody NaverCodeRequestDto dto, HttpServletResponse response) {
+        LoginResponseDto loginResponse = naverAuthService.naverLogin(dto.getCode(), dto.getState());
+
+        Cookie cookie = new Cookie("refresh", loginResponse.getRefreshToken());
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60 * 24 * 7);
+        response.addCookie(cookie);
+
+        return ApiResponse.success(SuccessStatus.SEND_NAVER_LOGIN_SUCCESS, loginResponse);
     }
 
 
