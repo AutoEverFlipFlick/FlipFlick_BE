@@ -30,10 +30,10 @@ public interface PlayListRepository extends JpaRepository<PlayList, Long> {
             "ORDER BY p.createdAt DESC")
     Page<PlayList> findByUserIdAndIsDeletedFalseOrderByCreatedAtDesc(@Param("userId") Long userId, Pageable pageable);
 
-    // 사용자가 북마크한 플레이리스트 조회 (페이지네이션)
+    // 사용자가 북마크한 플레이리스트 조회 (페이지네이션) - hidden=false AND isDeleted=false 조건 모두 포함
     @Query("SELECT p FROM PlayList p " +
             "JOIN PlayListBookmark pb ON p.id = pb.playList.id " +
-            "WHERE pb.member.id = :userId AND p.isDeleted = false " +
+            "WHERE pb.member.id = :userId AND p.isDeleted = false AND p.hidden = false " +
             "ORDER BY pb.createdAt DESC")
     Page<PlayList> findBookmarkedByUserIdAndIsDeletedFalseOrderByCreatedAtDesc(@Param("userId") Long userId, Pageable pageable);
 

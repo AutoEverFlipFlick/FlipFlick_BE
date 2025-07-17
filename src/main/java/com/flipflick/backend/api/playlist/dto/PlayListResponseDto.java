@@ -32,6 +32,7 @@ public class PlayListResponseDto {
         private Long playListId;
         private String title;
         private String nickname;
+        private boolean hidden;
         private Integer movieCount;
         private Integer bookmarkCount;
         private MoviePageResponse movies;
