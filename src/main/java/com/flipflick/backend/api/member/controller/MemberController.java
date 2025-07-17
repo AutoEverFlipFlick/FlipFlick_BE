@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -86,11 +88,21 @@ public class MemberController {
         return ApiResponse.success_only(SuccessStatus.UPDATE_PASSWORD_SUCCESS);
     }
 
+    // 마이페이지 프로필 이미지 변경
+    @Operation(summary = "프로필 이미지 변경 API", description = "사용자의 프로필 이미지를 변경합니다.")
+    @PutMapping("/profile-image")
+    public ResponseEntity<ApiResponse<String>> updateProfileImage(
+            @RequestPart MultipartFile file,
+            @AuthenticationPrincipal SecurityMember securityMember
+    ) throws IOException {
+        String imageUrl = memberService.updateProfileImage(securityMember.getEmail(), file);
+        return ApiResponse.success(SuccessStatus.UPDATE_PROFILE_IMAGE_SUCCESS, imageUrl);
+    }
+
     // 회원 정보 조회
     @Operation(summary = "회원정보 조회 API", description = "회원 정보를 조회합니다.")
     @GetMapping("/user-info")
     public ResponseEntity<ApiResponse<MemberResponseDto>> getMemberInfo(@AuthenticationPrincipal SecurityMember securityMember) {
-
         Member member = memberService.getMemberInfo(securityMember.getId());
         MemberResponseDto memberResponseDto = MemberResponseDto.of(member);
         return ApiResponse.success(SuccessStatus.SEND_LOGIN_SUCCESS, memberResponseDto);
