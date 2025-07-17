@@ -20,6 +20,9 @@ public interface PlayListBookmarkRepository extends JpaRepository<PlayListBookma
     @Query("SELECT COUNT(pb) FROM PlayListBookmark pb WHERE pb.playList.id = :playListId")
     Integer countByPlayListId(@Param("playListId") Long playListId);
 
-    @Query("SELECT pb.playList.id FROM PlayListBookmark pb WHERE pb.member.id = :userId ORDER BY pb.createdAt DESC")
+    // 사용자의 모든 북마크된 플레이리스트 ID 목록 조회 - hidden=false AND isDeleted=false 조건 모두 포함
+    @Query("SELECT pb.playList.id FROM PlayListBookmark pb " +
+            "WHERE pb.member.id = :userId AND pb.playList.isDeleted = false AND pb.playList.hidden = false " +
+            "ORDER BY pb.createdAt DESC")
     List<Long> findPlayListIdsByMemberId(@Param("userId") Long userId);
 }
