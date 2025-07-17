@@ -97,8 +97,15 @@ public class MemberController {
     }
 
     @PostMapping("/kakao")
-    public ResponseEntity<ApiResponse<LoginResponseDto>> kakaoLogin(@RequestBody KakaoCodeRequestDto requestDto) {
+    public ResponseEntity<ApiResponse<LoginResponseDto>> kakaoLogin(@RequestBody KakaoCodeRequestDto requestDto,HttpServletResponse response) {
         LoginResponseDto loginResponse = kakaoAuthService.kakaoLogin(requestDto.getCode());
+
+        Cookie cookie = new Cookie("refresh", loginResponse.getRefreshToken());
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60 * 24 * 7);
+        response.addCookie(cookie);
+
         return ApiResponse.success(SuccessStatus.SEND_KAKA_LOGIN_SUCCESS, loginResponse);
     }
 
