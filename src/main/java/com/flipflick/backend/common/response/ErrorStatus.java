@@ -25,6 +25,7 @@ public enum ErrorStatus {
     NOT_RELEASE_MOVIE_EXCEPTION(HttpStatus.BAD_REQUEST,"아직 개봉되지 않은 영화 입니다."),
     NOT_REGISTER_MOVIE_EXCEPTION(HttpStatus.BAD_REQUEST, "존재하지 않는 영화 입니다."),
     NOT_REGISTER_CAST_EXCEPTION(HttpStatus.BAD_REQUEST,"존재하지 않는 배우 입니다."),
+    EMPTY_FILE(HttpStatus.BAD_REQUEST, "업로드할 파일이 비어있습니다."),
 
     /**
      * 401 UNAUTHORIZED

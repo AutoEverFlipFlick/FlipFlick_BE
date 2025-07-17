@@ -28,7 +28,7 @@ public class Member extends BaseTimeEntity {
     private String nickname;
     private String password;
     private String socialType;
-    private Long socialId;
+    private String socialId;
     private Integer block;    // 0 : 정상, 1 : 정지, 2 : 차단
     private LocalDateTime blockDate;
     private String profileImage;
@@ -53,5 +53,7 @@ public class Member extends BaseTimeEntity {
     // 비밀번호 변경
     public void updatePassword(String password) { this.password = password; }
 
+    // 프로필 이미지 변경
+    public void updateProfileImage(String profileImage) { this.profileImage = profileImage;}
 }
 

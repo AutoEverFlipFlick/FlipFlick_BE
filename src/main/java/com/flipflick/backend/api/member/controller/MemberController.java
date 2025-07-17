@@ -2,7 +2,9 @@ package com.flipflick.backend.api.member.controller;
 
 import com.flipflick.backend.api.member.dto.*;
 import com.flipflick.backend.api.member.entity.Member;
+import com.flipflick.backend.api.member.service.KakaoAuthService;
 import com.flipflick.backend.api.member.service.MemberService;
+import com.flipflick.backend.api.member.service.NaverAuthService;
 import com.flipflick.backend.common.config.security.SecurityMember;
 import com.flipflick.backend.common.response.ApiResponse;
 import com.flipflick.backend.common.response.SuccessStatus;
@@ -15,8 +17,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,6 +28,8 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController {
 
     private final MemberService memberService;
+    private final KakaoAuthService kakaoAuthService;
+    private final NaverAuthService naverAuthService;
 
     @Operation(
             summary = "이메일 회원가입 API", description = "회원정보를 받아 사용자를 등록합니다.")
@@ -85,15 +90,62 @@ public class MemberController {
         return ApiResponse.success_only(SuccessStatus.UPDATE_PASSWORD_SUCCESS);
     }
 
+    // 마이페이지 프로필 이미지 변경
+    @Operation(summary = "프로필 이미지 변경 API", description = "사용자의 프로필 이미지를 변경합니다.")
+    @PutMapping("/profile-image")
+    public ResponseEntity<ApiResponse<String>> updateProfileImage(
+            @RequestPart MultipartFile file,
+            @AuthenticationPrincipal SecurityMember securityMember
+    ) throws IOException {
+        String imageUrl = memberService.updateProfileImage(securityMember.getEmail(), file);
+        return ApiResponse.success(SuccessStatus.UPDATE_PROFILE_IMAGE_SUCCESS, imageUrl);
+    }
+
     // 회원 정보 조회
     @Operation(summary = "회원정보 조회 API", description = "회원 정보를 조회합니다.")
     @GetMapping("/user-info")
     public ResponseEntity<ApiResponse<MemberResponseDto>> getMemberInfo(@AuthenticationPrincipal SecurityMember securityMember) {
-
         Member member = memberService.getMemberInfo(securityMember.getId());
         MemberResponseDto memberResponseDto = MemberResponseDto.of(member);
         return ApiResponse.success(SuccessStatus.SEND_LOGIN_SUCCESS, memberResponseDto);
     }
+
+    @Operation(
+            summary = "카카오톡 로그인 API", description = "카카오톡 로그인")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "카카오톡 로그인 성공")
+    })
+    @PostMapping("/kakao")
+    public ResponseEntity<ApiResponse<LoginResponseDto>> kakaoLogin(@RequestBody KakaoCodeRequestDto requestDto,HttpServletResponse response) {
+        LoginResponseDto loginResponse = kakaoAuthService.kakaoLogin(requestDto.getCode());
+
+        Cookie cookie = new Cookie("refresh", loginResponse.getRefreshToken());
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60 * 24 * 7);
+        response.addCookie(cookie);
+
+        return ApiResponse.success(SuccessStatus.SEND_KAKA_LOGIN_SUCCESS, loginResponse);
+    }
+
+    @Operation(
+            summary = "네이버 로그인 API", description = "네이버 로그인")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "네이버 로그인 성공")
+    })
+    @PostMapping("/naver")
+    public ResponseEntity<ApiResponse<LoginResponseDto>> naverLogin(@RequestBody NaverCodeRequestDto dto, HttpServletResponse response) {
+        LoginResponseDto loginResponse = naverAuthService.naverLogin(dto.getCode(), dto.getState());
+
+        Cookie cookie = new Cookie("refresh", loginResponse.getRefreshToken());
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60 * 24 * 7);
+        response.addCookie(cookie);
+
+        return ApiResponse.success(SuccessStatus.SEND_NAVER_LOGIN_SUCCESS, loginResponse);
+    }
+
 
 
 }

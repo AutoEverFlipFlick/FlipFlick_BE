@@ -29,7 +29,12 @@ public enum SuccessStatus {
     SEND_CAST_LIST_SUCCESS(HttpStatus.OK,"배우 리스트 조회 성공"),
     SEND_CAST_DETAIL_SUCCESS(HttpStatus.OK,"배우 상세 조회 성공"),
     UPDATE_NICKNAME_SUCCESS(HttpStatus.OK,"닉네임 변경 성공"),
-    UPDATE_PASSWORD_SUCCESS(HttpStatus.OK,"비밀번호 변경 성공");
+    UPDATE_PASSWORD_SUCCESS(HttpStatus.OK,"비밀번호 변경 성공"),
+    IMAGE_UPLOAD_SUCCESS(HttpStatus.OK, "이미지 업로드 성공"),
+    SEND_KAKA_LOGIN_SUCCESS(HttpStatus.OK, "카카오 로그인 성공"),
+    SEND_NAVER_LOGIN_SUCCESS(HttpStatus.OK, "네이버 로그인 성공"),
+    UPDATE_PROFILE_IMAGE_SUCCESS(HttpStatus.OK,"프로필 이미지 변경 성공"),
+
     /**
      * 201
      */
