@@ -34,11 +34,10 @@ public enum SuccessStatus {
     SEND_KAKA_LOGIN_SUCCESS(HttpStatus.OK, "카카오 로그인 성공"),
     SEND_NAVER_LOGIN_SUCCESS(HttpStatus.OK, "네이버 로그인 성공"),
     UPDATE_PROFILE_IMAGE_SUCCESS(HttpStatus.OK,"프로필 이미지 변경 성공"),
+
     /**
      * 201
      */
-
-    ;
 
     private final HttpStatus httpStatus;
     private final String message;
