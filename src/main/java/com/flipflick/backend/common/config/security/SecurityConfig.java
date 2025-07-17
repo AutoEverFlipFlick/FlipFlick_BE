@@ -98,6 +98,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/movie/view", "/api/v1/cast/view").permitAll() // 영화, 배우 상세 조회 인증 허가
                         .requestMatchers("/api/v1/member/user-info").permitAll()
                         .requestMatchers("/api/v1/s3/image").permitAll()
+                        .requestMatchers("/api/v1/member/kakao").permitAll()
                         .anyRequest().authenticated()
                 );
 
