@@ -18,12 +18,15 @@ public enum SuccessStatus {
     SEND_HEALTH_SUCCESS(HttpStatus.OK,"서버 상태 OK"),
     SEND_MOVIE_DETAIL_SUCCESS(HttpStatus.OK,"영화 상세 조회 성공"),
     SEND_MOVIE_LIST_SUCCESS(HttpStatus.OK,"영화 리스트 조회 성공"),
-
-    /**
-     * 201
-     */
-
-    ;
+    // PlayList 관련 성공 상태
+    SEND_PLAYLIST_LIST_SUCCESS(HttpStatus.OK,"플레이리스트 목록 조회 성공"),
+    SEND_PLAYLIST_DETAIL_SUCCESS(HttpStatus.OK,"플레이리스트 상세 조회 성공"),
+    SEND_PLAYLIST_CREATE_SUCCESS(HttpStatus.OK,"플레이리스트 생성 성공"),
+    SEND_PLAYLIST_BOOKMARK_SUCCESS(HttpStatus.OK,"플레이리스트 북마크 처리 성공"),
+    SEND_PLAYLIST_UPDATE_SUCCESS(HttpStatus.OK,"플레이리스트 수정 성공"),
+    SEND_PLAYLIST_DELETE_SUCCESS(HttpStatus.OK,"플레이리스트 삭제 성공"),
+    SEND_PLAYLIST_SEARCH_SUCCESS(HttpStatus.OK,"플레이리스트 검색 성공"),
+    SEND_PLAYLIST_BOOKMARK_LIST_SUCCESS(HttpStatus.OK,"북마크 플레이리스트 ID 목록 조회 성공");
 
     private final HttpStatus httpStatus;
     private final String message;
