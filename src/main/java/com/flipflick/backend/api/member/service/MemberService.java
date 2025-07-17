@@ -117,4 +117,11 @@ public class MemberService {
                 ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage()));
         return member;
     }
+
+    // ID로 회원 조회
+    public MemberResponseDto getMemberById(Long id) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 회원을 찾을 수 없습니다."));
+        return MemberResponseDto.of(member);
+    }
 }

@@ -32,6 +32,11 @@ public enum SuccessStatus {
     UPDATE_PASSWORD_SUCCESS(HttpStatus.OK,"비밀번호 변경 성공"),
     IMAGE_UPLOAD_SUCCESS(HttpStatus.OK, "이미지 업로드 성공"),
     UPDATE_PROFILE_IMAGE_SUCCESS(HttpStatus.OK,"프로필 이미지 변경 성공"),
+    SEND_FOLLOW_SUCCESS(HttpStatus.OK,"팔로우 성공"),
+    SEND_UNFOLLOW_SUCCESS(HttpStatus.OK,"언팔로우 성공"),
+    SEND_CHECK_FOLLOW_SUCCESS(HttpStatus.OK,"팔로우 수 조회 성공"),
+    SEND_FOLLOWER_LIST_SUCCESS(HttpStatus.OK,"팔로워 리스트 조회 성공"),
+    SEND_FOLLOWING_LIST_SUCCESS(HttpStatus.OK,"팔로잉 리스트 조회 성공"),
     /**
      * 201
      */
