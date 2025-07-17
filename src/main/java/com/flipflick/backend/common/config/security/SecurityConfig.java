@@ -99,6 +99,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/member/user-info").permitAll()
                         .requestMatchers("/api/v1/s3/image").permitAll()
                         .requestMatchers("/api/v1/member/kakao").permitAll()
+                        .requestMatchers("/api/v1/member/naver").permitAll()
                         .anyRequest().authenticated()
                 );
 
