@@ -17,9 +17,11 @@ public enum ErrorStatus {
     ALREADY_REGISTERED_ACCOUNT_EXCEPTION(HttpStatus.BAD_REQUEST, "이미 회원가입된 이메일입니다."),
     NOT_MATCHED_LOGIN_USER_EXCEPTION(HttpStatus.BAD_REQUEST, "아이디 또는 비밀번호가 일치하지 않습니다."),
     NOT_REGISTER_USER_EXCEPTION(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자 입니다."),
+    PLAYLIST_CREATION_FAILED(HttpStatus.BAD_REQUEST, "플레이리스트 생성에 실패했습니다."),
+    PLAYLIST_BOOKMARK_FAILED(HttpStatus.BAD_REQUEST, "플레이리스트 북마크 처리에 실패했습니다."),
+    SELF_BOOKMARK_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "본인이 만든 플레이리스트는 북마크할 수 없습니다."),
     PASSWORD_MISMATCH_EXCEPTION(HttpStatus.BAD_REQUEST, "비밀번호와 비밀번호 확인 값이 일치하지 않습니다."),
     INVALID_PASSWORD_EXCEPTION(HttpStatus.BAD_REQUEST, "비밀번호가 올바르지 않습니다."),
-
     NOT_RELEASE_MOVIE_EXCEPTION(HttpStatus.BAD_REQUEST,"아직 개봉되지 않은 영화 입니다."),
     NOT_REGISTER_MOVIE_EXCEPTION(HttpStatus.BAD_REQUEST, "존재하지 않는 영화 입니다."),
     NOT_REGISTER_CAST_EXCEPTION(HttpStatus.BAD_REQUEST,"존재하지 않는 배우 입니다."),
@@ -32,6 +34,7 @@ public enum ErrorStatus {
     EXPIRED_TOKEN_EXCEPTION(HttpStatus.UNAUTHORIZED,"만료된 토큰입니다."),
     INVALID_SIGNATURE_EXCEPTION(HttpStatus.UNAUTHORIZED,"비정상적인 서명입니다."),
     MALFORMED_TOKEN_EXCEPTION(HttpStatus.UNAUTHORIZED,"유효하지 않은 토큰입니다."),
+    PLAYLIST_ACCESS_DENIED(HttpStatus.FORBIDDEN, "플레이리스트에 접근할 권한이 없습니다."),
     MALFORMED_ACCESS_TOKEN_EXCEPTION(HttpStatus.UNAUTHORIZED,"유효하지 않은 Access 토큰입니다."),
 
     /**
@@ -42,6 +45,11 @@ public enum ErrorStatus {
      * 404 NOT_FOUND
      */
     NOT_LOGIN_EXCEPTION(HttpStatus.NOT_FOUND,"로그인이 필요합니다."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
+
+    // PlayList 관련 에러
+    PLAYLIST_NOT_FOUND(HttpStatus.NOT_FOUND, "플레이리스트를 찾을 수 없습니다."),
+    MOVIE_NOT_FOUND(HttpStatus.NOT_FOUND, "영화 정보를 찾을 수 없습니다."),
 
     /**
      * 500 SERVER_ERROR
