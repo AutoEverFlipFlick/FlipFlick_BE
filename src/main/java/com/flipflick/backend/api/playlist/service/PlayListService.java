@@ -92,6 +92,7 @@ public class PlayListService {
                 .playListId(playList.getId())
                 .title(playList.getTitle())
                 .nickname(playList.getMember().getNickname())
+                .hidden(playList.getHidden())
                 .movieCount(totalMovieCount)  // 전체 영화 개수
                 .bookmarkCount(bookmarkCount)
                 .movies(moviePageResponse)  // 페이지네이션된 영화 목록

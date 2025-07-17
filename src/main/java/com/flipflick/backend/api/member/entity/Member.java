@@ -31,7 +31,7 @@ public class Member extends BaseTimeEntity {
     private String nickname;
     private String password;
     private String socialType;
-    private Long socialId;
+    private String socialId;
     private Integer block;    // 0 : 정상, 1 : 정지, 2 : 차단
     private LocalDateTime blockDate;
     private String profileImage;
