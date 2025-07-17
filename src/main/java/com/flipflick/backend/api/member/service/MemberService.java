@@ -5,8 +5,11 @@ import com.flipflick.backend.api.member.dto.*;
 import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.repository.MemberRepository;
 import com.flipflick.backend.common.exception.BadRequestException;
+import com.flipflick.backend.common.exception.NotFoundException;
+import com.flipflick.backend.common.exception.UnauthorizedException;
 import com.flipflick.backend.common.jwt.JWTUtil;
 import com.flipflick.backend.common.response.ErrorStatus;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -117,4 +120,48 @@ public class MemberService {
                 ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage()));
         return member;
     }
+
+    @Transactional
+    public LoginResponseDto reissueToken(String refresh) {
+
+
+        if (refresh == null) {
+            throw new UnauthorizedException(ErrorStatus.REFRESH_TOKEN_NOT_FOUND.getMessage());
+        }
+
+        try {
+            jwtUtil.isExpired(refresh);
+        } catch (ExpiredJwtException e) {
+            throw new UnauthorizedException(ErrorStatus.REFRESH_TOKEN_EXPIRED.getMessage());
+        }
+
+        String category = jwtUtil.getCategory(refresh);
+        if (!"refresh".equals(category)) {
+            throw new UnauthorizedException(ErrorStatus.MALFORMED_TOKEN_EXCEPTION.getMessage());
+        }
+
+
+
+        Long id = jwtUtil.getId(refresh);
+        String role = jwtUtil.getRole(refresh);
+
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+        if (!refresh.equals(member.getRefreshToken())) {
+            throw new UnauthorizedException(ErrorStatus.MALFORMED_TOKEN_EXCEPTION.getMessage()); // 다른 refresh token인 경우
+        }
+
+        // 새 토큰 발급
+        String newAccessToken = jwtUtil.createJwt("access", id, role, 1000 * 60 * 30L); // 30분
+        String newRefreshToken = jwtUtil.createJwt("refresh", id, role, 1000L * 60 * 60 * 24 * 7); // 7일
+
+        member.updateRefreshToken(newRefreshToken,1000L * 60 * 60 * 24 * 7);
+        memberRepository.save(member);
+
+        // 쿠키에 새 refresh 토큰 저장
+
+        return new LoginResponseDto(newAccessToken, newRefreshToken);
+    }
+
 }
