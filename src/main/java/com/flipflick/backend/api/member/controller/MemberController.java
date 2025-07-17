@@ -96,6 +96,11 @@ public class MemberController {
         return ApiResponse.success(SuccessStatus.SEND_LOGIN_SUCCESS, memberResponseDto);
     }
 
+    @Operation(
+            summary = "카카오톡 로그인 API", description = "카카오톡 로그인")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "카카오톡 로그인 성공")
+    })
     @PostMapping("/kakao")
     public ResponseEntity<ApiResponse<LoginResponseDto>> kakaoLogin(@RequestBody KakaoCodeRequestDto requestDto,HttpServletResponse response) {
         LoginResponseDto loginResponse = kakaoAuthService.kakaoLogin(requestDto.getCode());
