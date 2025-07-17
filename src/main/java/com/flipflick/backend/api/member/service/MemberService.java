@@ -1,5 +1,6 @@
 package com.flipflick.backend.api.member.service;
 
+import com.flipflick.backend.api.aws.s3.service.S3Service;
 import com.flipflick.backend.api.member.dto.*;
 import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.repository.MemberRepository;
@@ -11,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +22,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
     private final JWTUtil jwtUtil;
+    private final S3Service s3Service;
 
     @Transactional
     public void signup(MemberSignupRequestDto requestDto) {
@@ -89,7 +93,24 @@ public class MemberService {
         member.updatePassword(encodedPassword);
     }
 
+    // 프로필 이미지 변경
+    @Transactional
+    public String updateProfileImage(String email, MultipartFile file) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage()));
 
+        try {
+            String imageUrl = s3Service.upload(file, "profile");
+            member.updateProfileImage(imageUrl);
+
+            return imageUrl;
+        } catch (IOException e) {
+            throw new RuntimeException("이미지 업로드 실패", e);
+        }
+    }
+
+
+    // 회원 정보 조회
     public Member getMemberInfo(Long userId) {
 
         Member member = memberRepository.findById(userId).orElseThrow(()-> new BadRequestException(
