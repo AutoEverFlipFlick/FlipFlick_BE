@@ -58,13 +58,13 @@ public class KakaoAuthService {
 
         ResponseEntity<KakaoUserInfo> response = restTemplate.exchange(
                 "https://kapi.kakao.com/v2/user/me", HttpMethod.GET, request, KakaoUserInfo.class);
-        KakaoUserInfo userInfo = response.getBody();
+
 
         return response.getBody();
     }
 
     public Member getOrRegisterUser(KakaoUserInfo userInfo) {
-        Long kakaoId = userInfo.getId(); // Long 타입
+        String kakaoId = userInfo.getId(); // Long 타입
 
         // 1. 소셜 ID로 유저 찾기
         Optional<Member> memberOpt = memberRepository.findBySocialId(kakaoId);
