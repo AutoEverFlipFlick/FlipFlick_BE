@@ -1,4 +1,4 @@
-package com.flipflick.backend.api.movie.dto;
+package com.flipflick.backend.api.search.dto;
 
 import lombok.Builder;
 import lombok.Getter;

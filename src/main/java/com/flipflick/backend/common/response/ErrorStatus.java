@@ -20,7 +20,11 @@ public enum ErrorStatus {
     PLAYLIST_CREATION_FAILED(HttpStatus.BAD_REQUEST, "플레이리스트 생성에 실패했습니다."),
     PLAYLIST_BOOKMARK_FAILED(HttpStatus.BAD_REQUEST, "플레이리스트 북마크 처리에 실패했습니다."),
     SELF_BOOKMARK_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "본인이 만든 플레이리스트는 북마크할 수 없습니다."),
-
+    PASSWORD_MISMATCH_EXCEPTION(HttpStatus.BAD_REQUEST, "비밀번호와 비밀번호 확인 값이 일치하지 않습니다."),
+    INVALID_PASSWORD_EXCEPTION(HttpStatus.BAD_REQUEST, "비밀번호가 올바르지 않습니다."),
+    NOT_RELEASE_MOVIE_EXCEPTION(HttpStatus.BAD_REQUEST,"아직 개봉되지 않은 영화 입니다."),
+    NOT_REGISTER_MOVIE_EXCEPTION(HttpStatus.BAD_REQUEST, "존재하지 않는 영화 입니다."),
+    NOT_REGISTER_CAST_EXCEPTION(HttpStatus.BAD_REQUEST,"존재하지 않는 배우 입니다."),
 
     /**
      * 401 UNAUTHORIZED
@@ -31,6 +35,7 @@ public enum ErrorStatus {
     INVALID_SIGNATURE_EXCEPTION(HttpStatus.UNAUTHORIZED,"비정상적인 서명입니다."),
     MALFORMED_TOKEN_EXCEPTION(HttpStatus.UNAUTHORIZED,"유효하지 않은 토큰입니다."),
     PLAYLIST_ACCESS_DENIED(HttpStatus.FORBIDDEN, "플레이리스트에 접근할 권한이 없습니다."),
+    MALFORMED_ACCESS_TOKEN_EXCEPTION(HttpStatus.UNAUTHORIZED,"유효하지 않은 Access 토큰입니다."),
 
     /**
      * 403 FORBIDDEN
