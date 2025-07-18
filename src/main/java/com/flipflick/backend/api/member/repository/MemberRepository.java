@@ -20,5 +20,7 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
     // 정지 기간이 만료된 사용자들 조회
     @Query("SELECT m FROM Member m WHERE m.block = 1 AND m.blockDate <= :now")
     List<Member> findExpiredSuspensions(@Param("now") LocalDateTime now);
+    boolean existsByEmail(String email);
+    boolean existsByNickname(String nickname);
 
 }

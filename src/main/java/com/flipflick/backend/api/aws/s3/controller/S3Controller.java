@@ -1,5 +1,6 @@
 package com.flipflick.backend.api.aws.s3.controller;
 
+import com.flipflick.backend.api.aws.s3.dto.DeleteImageRequestDto;
 import com.flipflick.backend.api.aws.s3.service.S3Service;
 import com.flipflick.backend.common.response.ApiResponse;
 import com.flipflick.backend.common.response.SuccessStatus;
@@ -27,6 +28,15 @@ public class S3Controller {
 
         String url = s3Service.upload(file, "images");
         return ApiResponse.success(SuccessStatus.IMAGE_UPLOAD_SUCCESS, url);
+
+    }
+
+    @Operation(summary = "이미지 삭제 API", description = "이미지 url을 받아서 삭제")
+    @DeleteMapping("/image")
+    public ResponseEntity<ApiResponse<Void>> deleteImage(@RequestBody DeleteImageRequestDto request){
+
+        s3Service.deleteImage(request.getUrl());
+        return ApiResponse.success_only(SuccessStatus.IMAGE_DELETE_SUCCESS);
 
     }
 

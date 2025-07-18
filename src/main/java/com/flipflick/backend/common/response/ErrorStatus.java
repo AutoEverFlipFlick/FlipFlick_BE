@@ -31,8 +31,11 @@ public enum ErrorStatus {
     REVIEW_UPDATE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 리뷰만 수정할 수 있습니다."),
     REVIEW_DELETE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 리뷰만 삭제할 수 있습니다."),
     REVIEW_SELF_LIKE_HATE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 리뷰에는 좋아요/싫어요를 할 수 없습니다."),
+    INVALID_IMAGE_URL(HttpStatus.BAD_REQUEST, "유효하지 않은 이미지 URL입니다."),
     FOLLOW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 팔로우 중입니다."),
     SELF_FOLLOW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "자신은 팔로우할 수 없습니다."),
+    INCORRECT_USER_EXCEPTION(HttpStatus.BAD_REQUEST,"올바르지 않은 회원입니다."),
+
     /**
      * 401 UNAUTHORIZED
      */
@@ -45,7 +48,6 @@ public enum ErrorStatus {
     MALFORMED_ACCESS_TOKEN_EXCEPTION(HttpStatus.UNAUTHORIZED,"유효하지 않은 Access 토큰입니다."),
     REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED,  "Refresh Token이 존재하지 않습니다."),
     REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Refresh Token이 만료되었습니다."),
-
 
     /**
      * 403 FORBIDDEN
@@ -67,6 +69,7 @@ public enum ErrorStatus {
     FOLLOW_NOT_FOUND(HttpStatus.NOT_FOUND, "팔로우 정보가 없습니다."),
     FOLLOW_USER_INFO_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자 정보가 없습니다."),
     TARGET_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "대상 회원을 찾을 수 없습니다."),
+  
     /**
      * 500 SERVER_ERROR
      */
