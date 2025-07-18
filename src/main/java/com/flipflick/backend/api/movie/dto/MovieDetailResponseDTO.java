@@ -19,6 +19,8 @@ public class MovieDetailResponseDTO {
     private String backgroundImg;
     private double popcorn;
     private double voteAverage;
+    private long likeCnt;
+    private long hateCnt;
     private LocalDate releaseDate;
     private int runtime;
     private int productionYear;
