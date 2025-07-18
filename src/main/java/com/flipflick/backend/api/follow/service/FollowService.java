@@ -4,6 +4,9 @@ import com.flipflick.backend.api.follow.entity.Follow;
 import com.flipflick.backend.api.follow.repository.FollowRepository;
 import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.repository.MemberRepository;
+import com.flipflick.backend.common.exception.BadRequestException;
+import com.flipflick.backend.common.exception.NotFoundException;
+import com.flipflick.backend.common.response.ErrorStatus;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,16 +26,16 @@ public class FollowService {
     @Transactional
     public void follow(String email, Long targetMemberId) {
         Member following = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("사용자 정보 없음"));
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.FOLLOW_USER_INFO_NOT_FOUND.getMessage()));
         Member followed = memberRepository.findById(targetMemberId)
-                .orElseThrow(() -> new IllegalArgumentException("대상 회원 없음"));
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.TARGET_USER_NOT_FOUND.getMessage()));
 
         if (following.equals(followed)) {
-            throw new IllegalArgumentException("자기 자신은 팔로우할 수 없습니다.");
+            throw new BadRequestException(ErrorStatus.SELF_FOLLOW_NOT_ALLOWED.getMessage());
         }
 
         if (followRepository.existsByFollowingAndFollowed(following, followed)) {
-            throw new IllegalStateException("이미 팔로우 중입니다.");
+            throw new BadRequestException(ErrorStatus.FOLLOW_ALREADY_EXISTS.getMessage());
         }
 
         Follow follow = Follow.builder()
@@ -47,12 +50,12 @@ public class FollowService {
     @Transactional
     public void unfollow(String email, Long targetMemberId) {
         Member following = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("사용자 정보 없음"));
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
         Member followed = memberRepository.findById(targetMemberId)
-                .orElseThrow(() -> new IllegalArgumentException("대상 회원 없음"));
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.TARGET_USER_NOT_FOUND.getMessage()));
 
         Follow follow = followRepository.findByFollowingAndFollowed(following, followed)
-                .orElseThrow(() -> new IllegalArgumentException("팔로우 정보 없음"));
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.FOLLOW_NOT_FOUND.getMessage()));
 
         followRepository.delete(follow);
     }
@@ -61,7 +64,7 @@ public class FollowService {
     @Transactional(readOnly = true)
     public long getFollowerCount(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
         return followRepository.countByFollowed(member);
     }
 
@@ -69,14 +72,15 @@ public class FollowService {
     @Transactional(readOnly = true)
     public long getFollowingCount(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
         return followRepository.countByFollowing(member);
     }
 
+    // 팔로워
     @Transactional(readOnly = true)
     public List<Member> getFollowers(Long memberId) {
         Member followed = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("회원 없음"));
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));;
 
         return followRepository.findAllByFollowed(followed)
                 .stream()
@@ -84,10 +88,11 @@ public class FollowService {
                 .toList();
     }
 
+    // 팔로잉
     @Transactional(readOnly = true)
     public List<Member> getFollowings(Long memberId) {
         Member following = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("회원 없음"));
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         return followRepository.findAllByFollowing(following)
                 .stream()
@@ -95,14 +100,13 @@ public class FollowService {
                 .toList();
     }
 
-
     // 팔로우 여부 확인
     @Transactional(readOnly = true)
     public boolean isFollowing(String email, Long targetMemberId) {
         Member following = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("사용자 정보 없음"));
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.FOLLOW_USER_INFO_NOT_FOUND.getMessage()));
         Member followed = memberRepository.findById(targetMemberId)
-                .orElseThrow(() -> new IllegalArgumentException("대상 회원 없음"));
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.TARGET_USER_NOT_FOUND.getMessage()));
 
         return followRepository.existsByFollowingAndFollowed(following, followed);
     }

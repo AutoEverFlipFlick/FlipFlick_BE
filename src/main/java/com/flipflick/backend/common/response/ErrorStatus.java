@@ -31,7 +31,8 @@ public enum ErrorStatus {
     REVIEW_UPDATE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 리뷰만 수정할 수 있습니다."),
     REVIEW_DELETE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 리뷰만 삭제할 수 있습니다."),
     REVIEW_SELF_LIKE_HATE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 리뷰에는 좋아요/싫어요를 할 수 없습니다."),
-
+    FOLLOW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 팔로우 중입니다."),
+    SELF_FOLLOW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "자신은 팔로우할 수 없습니다."),
     /**
      * 401 UNAUTHORIZED
      */
@@ -62,6 +63,10 @@ public enum ErrorStatus {
 
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다."),
 
+    // follow 관련 에러
+    FOLLOW_NOT_FOUND(HttpStatus.NOT_FOUND, "팔로우 정보가 없습니다."),
+    FOLLOW_USER_INFO_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자 정보가 없습니다."),
+    TARGET_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "대상 회원을 찾을 수 없습니다."),
     /**
      * 500 SERVER_ERROR
      */
