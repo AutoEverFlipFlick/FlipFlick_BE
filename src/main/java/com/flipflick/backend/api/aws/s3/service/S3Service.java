@@ -56,6 +56,8 @@ public class S3Service {
                     .build();
 
             s3Client.deleteObject(deleteObjectRequest);
+        } else {
+            throw new BadRequestException(ErrorStatus.INVALID_IMAGE_URL.getMessage());
         }
 
 

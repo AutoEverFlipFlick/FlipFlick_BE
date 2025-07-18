@@ -171,4 +171,12 @@ public class MemberService {
         return new LoginResponseDto(newAccessToken, newRefreshToken);
     }
 
+    public boolean isEmailDuplicate(String email) {
+        return memberRepository.existsByEmail(email);
+    }
+
+    public boolean isNicknameDuplicate(String nickname) {
+        return memberRepository.existsByNickname(nickname);
+    }
+
 }

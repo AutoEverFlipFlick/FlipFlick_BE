@@ -182,6 +182,20 @@ public class MemberController {
         return ApiResponse.success(SuccessStatus.REISSUE_SUCCESS, dto);
     }
 
+    @Operation(summary = "이메일 중복 검사", description = "입력한 이메일이 중복되는지 확인합니다.")
+    @GetMapping("/check/email")
+    public ResponseEntity<ApiResponse<Boolean>> checkEmailDuplicate(@RequestParam String email) {
+        boolean isDuplicate = memberService.isEmailDuplicate(email);
+        return ApiResponse.success(SuccessStatus.CHECK_EMAIL_DUPLICATE, isDuplicate);
+    }
+
+    @Operation(summary = "닉네임 중복 검사", description = "입력한 닉네임이 중복되는지 확인합니다.")
+    @GetMapping("/check/nickname")
+    public ResponseEntity<ApiResponse<Boolean>> checkNicknameDuplicate(@RequestParam String nickname) {
+        boolean isDuplicate = memberService.isNicknameDuplicate(nickname);
+        return ApiResponse.success(SuccessStatus.CHECK_NICKNAME_DUPLICATE, isDuplicate);
+    }
+
 
 
 }
