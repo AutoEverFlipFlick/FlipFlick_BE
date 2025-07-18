@@ -300,6 +300,37 @@ public class PlayListService {
                 .build();
     }
 
+    //11. 닉네임으로 플레이리스트 조회 (최신순, 공개된 것만)
+    public PlayListResponseDto.PageResponse getPlayListsByNickname(String nickname, int page, int size) {
+        // 닉네임으로 사용자 존재 확인
+        Member member = memberRepository.findByNickname(nickname)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<PlayList> playListPage = playListRepository.findByMemberNicknameAndIsDeletedFalseAndHiddenFalseOrderByCreatedAtDesc(nickname, pageable);
+
+        Page<PlayListResponseDto.Summary> summaryPage = playListPage.map(playList -> {
+            // 첫 번째 영화의 포스터를 썸네일로 사용
+            String thumbnailUrl = moviePlaylistRepository.findFirstByPlayListIdOrderByCreatedAtAsc(playList.getId())
+                    .map(MoviePlaylist::getPosterUrl)
+                    .orElse(null);
+
+            Integer movieCount = moviePlaylistRepository.countByPlayListId(playList.getId());
+            Integer bookmarkCount = playListBookmarkRepository.countByPlayListId(playList.getId());
+
+            return PlayListResponseDto.Summary.builder()
+                    .playListId(playList.getId())
+                    .title(playList.getTitle())
+                    .nickname(playList.getMember().getNickname())
+                    .thumbnailUrl(thumbnailUrl)
+                    .movieCount(movieCount)
+                    .bookmarkCount(bookmarkCount)
+                    .build();
+        });
+
+        return PlayListResponseDto.PageResponse.from(summaryPage);
+    }
+
     // PlayList를 Summary DTO로 변환
     private PlayListResponseDto.Summary convertToSummary(PlayList playList) {
         Optional<MoviePlaylist> firstMovie = moviePlaylistRepository.findFirstByPlayListIdOrderByCreatedAtAsc(playList.getId());
