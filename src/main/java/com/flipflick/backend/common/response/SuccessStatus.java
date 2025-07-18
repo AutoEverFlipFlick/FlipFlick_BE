@@ -34,6 +34,12 @@ public enum SuccessStatus {
     SEND_KAKA_LOGIN_SUCCESS(HttpStatus.OK, "카카오 로그인 성공"),
     SEND_NAVER_LOGIN_SUCCESS(HttpStatus.OK, "네이버 로그인 성공"),
     UPDATE_PROFILE_IMAGE_SUCCESS(HttpStatus.OK,"프로필 이미지 변경 성공"),
+    SEND_FOLLOW_SUCCESS(HttpStatus.OK,"팔로우 성공"),
+    SEND_UNFOLLOW_SUCCESS(HttpStatus.OK,"언팔로우 성공"),
+    SEND_CHECK_FOLLOW_SUCCESS(HttpStatus.OK,"팔로우 수 조회 성공"),
+    SEND_FOLLOWER_LIST_SUCCESS(HttpStatus.OK,"팔로워 리스트 조회 성공"),
+    SEND_FOLLOWING_LIST_SUCCESS(HttpStatus.OK,"팔로잉 리스트 조회 성공"),
+    REISSUE_SUCCESS(HttpStatus.OK, "access토큰 재발급 성공"),
     SEND_REVIEW_CREATE_SUCCESS(HttpStatus.OK, "리뷰 작성 성공"),
     SEND_REVIEW_UPDATE_SUCCESS(HttpStatus.OK, "리뷰 수정 성공"),
     SEND_REVIEW_DELETE_SUCCESS(HttpStatus.OK, "리뷰 삭제 성공"),
@@ -43,12 +49,13 @@ public enum SuccessStatus {
     CHECK_NICKNAME_DUPLICATE(HttpStatus.OK, "닉네임 중복 검사 결과입니다."),
     IMAGE_DELETE_SUCCESS(HttpStatus.OK,"이미지 삭제 성공"),
     REISSUE_SUCCESS(HttpStatus.OK, "access토큰 재발급 성공");
+
     /**
      * 201
      */
 
     ;
-  
+
     private final HttpStatus httpStatus;
     private final String message;
 

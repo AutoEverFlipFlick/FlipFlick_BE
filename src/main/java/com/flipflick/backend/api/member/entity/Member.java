@@ -1,5 +1,6 @@
 package com.flipflick.backend.api.member.entity;
 
+import com.flipflick.backend.api.follow.entity.Follow;
 import com.flipflick.backend.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,7 +10,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "member")
@@ -55,5 +58,11 @@ public class Member extends BaseTimeEntity {
 
     // 프로필 이미지 변경
     public void updateProfileImage(String profileImage) { this.profileImage = profileImage;}
+
+    @OneToMany(mappedBy = "followed")
+    private List<Follow> followers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "following")
+    private List<Follow> followings = new ArrayList<>();
 }
 
