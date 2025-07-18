@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -144,6 +145,34 @@ public class MemberController {
         response.addCookie(cookie);
 
         return ApiResponse.success(SuccessStatus.SEND_NAVER_LOGIN_SUCCESS, loginResponse);
+    }
+
+    @Operation(
+            summary = "access토큰 재발급 API", description = "access토큰 재발급")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "access토큰 재발급 성공")
+    })
+    @PostMapping("/reissue")
+    public ResponseEntity<ApiResponse<LoginResponseDto>> reissue(HttpServletRequest request, HttpServletResponse response) {
+        String refresh = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("refresh")) {
+                    refresh = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        LoginResponseDto dto = memberService.reissueToken(refresh);
+
+        Cookie newRefreshCookie = new Cookie("refresh", dto.getRefreshToken());
+        newRefreshCookie.setHttpOnly(true);
+        newRefreshCookie.setPath("/");
+        newRefreshCookie.setMaxAge(60 * 60 * 24 * 7);
+        response.addCookie(newRefreshCookie);
+
+        return ApiResponse.success(SuccessStatus.REISSUE_SUCCESS, dto);
     }
 
 

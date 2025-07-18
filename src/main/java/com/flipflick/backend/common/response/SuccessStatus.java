@@ -38,12 +38,14 @@ public enum SuccessStatus {
     SEND_REVIEW_UPDATE_SUCCESS(HttpStatus.OK, "리뷰 수정 성공"),
     SEND_REVIEW_DELETE_SUCCESS(HttpStatus.OK, "리뷰 삭제 성공"),
     SEND_REVIEW_LIST_SUCCESS(HttpStatus.OK, "리뷰 목록 조회 성공"),
-    SEND_REVIEW_LIKE_HATE_SUCCESS(HttpStatus.OK, "리뷰 좋아요/싫어요 처리 성공");
-
+    SEND_REVIEW_LIKE_HATE_SUCCESS(HttpStatus.OK, "리뷰 좋아요/싫어요 처리 성공"),
+    REISSUE_SUCCESS(HttpStatus.OK, "access토큰 재발급 성공");
     /**
      * 201
      */
 
+    ;
+  
     private final HttpStatus httpStatus;
     private final String message;
 
