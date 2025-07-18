@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
@@ -26,4 +27,19 @@ public interface ReviewLikeHateRepository extends JpaRepository<ReviewLikeHate, 
     @Query("SELECT COUNT(rlh) FROM ReviewLikeHate rlh " +
             "WHERE rlh.review.id = :reviewId AND rlh.type = 'HATE'")
     Long countHatesByReviewId(@Param("reviewId") Long reviewId);
+
+
+    // 수정: 특정 날짜 끝 시점의 좋아요 수 계산
+    @Query("SELECT COUNT(rlh) FROM ReviewLikeHate rlh " +
+            "WHERE rlh.review.member.id = :memberId AND rlh.type = 'LIKE' " +
+            "AND rlh.createdAt < :endOfDay")
+    Integer countLikesByMemberIdUntilDate(@Param("memberId") Long memberId,
+                                          @Param("endOfDay") LocalDateTime endOfDay);
+
+    // 수정: 특정 날짜 끝 시점의 싫어요 수 계산
+    @Query("SELECT COUNT(rlh) FROM ReviewLikeHate rlh " +
+            "WHERE rlh.review.member.id = :memberId AND rlh.type = 'HATE' " +
+            "AND rlh.createdAt < :endOfDay")
+    Integer countHatesByMemberIdUntilDate(@Param("memberId") Long memberId,
+                                          @Param("endOfDay") LocalDateTime endOfDay);
 }
