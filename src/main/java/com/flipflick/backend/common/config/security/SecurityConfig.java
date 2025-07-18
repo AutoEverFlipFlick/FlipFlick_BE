@@ -101,6 +101,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/s3/image").permitAll()
                         .requestMatchers("/api/v1/member/kakao").permitAll()
                         .requestMatchers("/api/v1/member/naver").permitAll()
+                        .requestMatchers("/api/v1/member/check/nickname").permitAll()
+                        .requestMatchers("/api/v1/member/check/email").permitAll()
                         .anyRequest().authenticated()
                 );
 

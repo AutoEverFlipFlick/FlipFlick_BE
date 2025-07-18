@@ -31,6 +31,7 @@ public enum ErrorStatus {
     REVIEW_UPDATE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 리뷰만 수정할 수 있습니다."),
     REVIEW_DELETE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 리뷰만 삭제할 수 있습니다."),
     REVIEW_SELF_LIKE_HATE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 리뷰에는 좋아요/싫어요를 할 수 없습니다."),
+    INVALID_IMAGE_URL(HttpStatus.BAD_REQUEST, "유효하지 않은 이미지 URL입니다."),
 
     /**
      * 401 UNAUTHORIZED
