@@ -53,6 +53,8 @@ public enum SuccessStatus {
     SEND_MOVIE_WATCHED_SUCCESS(HttpStatus.OK,"영화 봤어요 토글 성공"),
     SEND_MOVIE_WATCHED_LIST_SUCCESS(HttpStatus.OK,"본 영화 목록 조회 성공"),
     UPDATE_SOCIAL_INFO_SUCCESS(HttpStatus.OK,"소셜 로그인 정보 설정 성공"),
+    SEND_MOVIE_LIKE_HATE_SUCCESS(HttpStatus.OK,"좋아요, 싫어요 토글 성공"),
+    SEND_MOVIE_LIKE_LIST_SUCCESS(HttpStatus.OK,"좋아요 한 영화 목록 조회 성공"),
 
     /**
      * 201

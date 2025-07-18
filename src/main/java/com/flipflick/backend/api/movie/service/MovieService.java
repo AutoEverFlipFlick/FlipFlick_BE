@@ -6,6 +6,7 @@ import com.flipflick.backend.api.member.repository.MemberRepository;
 import com.flipflick.backend.api.movie.dto.*;
 import com.flipflick.backend.api.movie.entity.*;
 import com.flipflick.backend.api.movie.repository.*;
+import com.flipflick.backend.api.review.entity.LikeHateType;
 import com.flipflick.backend.common.exception.BadRequestException;
 import com.flipflick.backend.common.exception.InternalServerException;
 import com.flipflick.backend.common.response.ErrorStatus;
@@ -45,6 +46,7 @@ public class MovieService {
     private final BookmarkRepository bookmarkRepository;
     private final MemberRepository memberRepository;
     private final WatchedRepository watchedRepository;
+    private final MovieLikeHateRepository movieLikeHateRepository;
 
     // 영화 상세 조회 메서드(DB에 영화데이터가 없으면 TMDB호출 및 저장후 반환)
     @Transactional
@@ -63,17 +65,15 @@ public class MovieService {
         boolean myHate      = false;
 
         if (memberId != null) {
-            // Member 객체 한 번만 로드
             Member member = memberRepository.findById(memberId)
-                    .orElseThrow(() -> new BadRequestException("존재하지 않는 회원입니다."));
+                    .orElseThrow(() -> new BadRequestException(ErrorStatus.INCORRECT_USER_EXCEPTION.getMessage()));
 
             myBookmark = bookmarkRepository.existsByMemberAndMovie(member, movie);
             myWatched = watchedRepository.existsByMemberAndMovie(member, movie);
-
-            // 아래 두 줄은 레포지토리가 있을 경우
-            // myLike   = likeRepository.existsByMemberAndMovie(member, movie);
-            // myHate   = hateRepository.existsByMemberAndMovie(member, movie);
+            myLike = movieLikeHateRepository.existsByMemberAndMovieAndType(member, movie, LikeHateType.LIKE);
+            myHate = movieLikeHateRepository.existsByMemberAndMovieAndType(member, movie, LikeHateType.HATE);
         }
+
         return MovieDetailResponseDTO.builder()
                 .movieId(movie.getId())
                 .tmdbId(movie.getTmdbId())
@@ -84,6 +84,8 @@ public class MovieService {
                 .backgroundImg(movie.getBackgroundImg())
                 .voteAverage(movie.getVoteAverage())
                 .popcorn(movie.getPopcorn())
+                .likeCnt(movie.getLikeCnt())
+                .hateCnt(movie.getHateCnt())
                 .releaseDate(movie.getReleaseDate())
                 .productionYear(movie.getProductionYear())
                 .productionCountry(movie.getProductionCountry())
@@ -425,4 +427,97 @@ public class MovieService {
                 .content(content)
                 .build();
     }
+
+    // 좋아요 싫어요 토글
+    @Transactional
+    public void movieLikeHate(Long memberId, MovieLikeHateRequestDTO movieLikeHateRequestDTO) {
+
+        // 영화와 회원 조회
+        Movie movie = movieRepository.findById(movieLikeHateRequestDTO.getMovieId())
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_MOVIE_EXCEPTION.getMessage()));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.INCORRECT_USER_EXCEPTION.getMessage()));
+
+        LikeHateType requested = movieLikeHateRequestDTO.getLikeHateType();
+
+        // 기존 토글 상태 조회
+        Optional<MovieLikeHate> opt = movieLikeHateRepository.findByMemberAndMovie(member, movie);
+
+        if (opt.isPresent()) {
+            MovieLikeHate existing = opt.get();
+
+            if (existing.getType() == requested) {
+
+                // 같은 버튼 연타
+                movieLikeHateRepository.delete(existing);
+                if (requested == LikeHateType.LIKE)   movie.decrementLike();
+                else                                    movie.decrementHate();
+            } else {
+                // LIKE → HATE 또는 HATE → LIKE 전환
+                // 기존 레코드 삭제 + 카운트 감소
+                movieLikeHateRepository.delete(existing);
+                if (existing.getType() == LikeHateType.LIKE) {
+                    movie.decrementLike();
+                } else {
+                    movie.decrementHate();
+                }
+
+                // 새 레코드 생성 + 카운트 증가
+                MovieLikeHate fresh = MovieLikeHate.builder()
+                        .movie(movie)
+                        .member(member)
+                        .type(requested)
+                        .build();
+                movieLikeHateRepository.save(fresh);
+                if (requested == LikeHateType.LIKE)   movie.incrementLike();
+                else                                    movie.incrementHate();
+            }
+        } else {
+            // 처음 누르는 경우
+            MovieLikeHate fresh = MovieLikeHate.builder()
+                    .movie(movie)
+                    .member(member)
+                    .type(requested)
+                    .build();
+            movieLikeHateRepository.save(fresh);
+            if (requested == LikeHateType.LIKE)   movie.incrementLike();
+            else                                    movie.incrementHate();
+        }
+    }
+
+    // 좋아요 누른 영화 리스트 조회
+    @Transactional(readOnly = true)
+    public MovieBWLHListResponseDTO getMovieLike(Long memberId, int page, int size) {
+
+        if (!memberRepository.existsById(memberId)) {
+            throw new BadRequestException(ErrorStatus.INCORRECT_USER_EXCEPTION.getMessage());
+        }
+
+        // 최신 좋아요 순
+        PageRequest pr = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<MovieLikeHate> pageLH = movieLikeHateRepository
+                .findByMember_IdAndType(memberId, LikeHateType.LIKE, pr);
+
+        var content = pageLH.getContent().stream()
+                .map(mh -> {
+                    Movie m = mh.getMovie();
+                    return new MovieBWLHResponseDTO(
+                            m.getTmdbId(),
+                            m.getPosterImg(),
+                            m.getTitle(),
+                            m.getReleaseDate().getYear()
+                    );
+                })
+                .collect(Collectors.toList());
+
+        return MovieBWLHListResponseDTO.builder()
+                .totalElements(pageLH.getTotalElements())
+                .totalPages(pageLH.getTotalPages())
+                .page(pageLH.getNumber())
+                .size(pageLH.getSize())
+                .isLast(pageLH.isLast())
+                .content(content)
+                .build();
+    }
+
 }

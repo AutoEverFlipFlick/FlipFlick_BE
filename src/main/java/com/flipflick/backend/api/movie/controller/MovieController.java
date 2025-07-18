@@ -1,9 +1,6 @@
 package com.flipflick.backend.api.movie.controller;
 
-import com.flipflick.backend.api.movie.dto.MovieBWLHListResponseDTO;
-import com.flipflick.backend.api.movie.dto.MovieBWLHRequestDTO;
-import com.flipflick.backend.api.movie.dto.MovieDetailResponseDTO;
-import com.flipflick.backend.api.movie.dto.SearchRequestIdDTO;
+import com.flipflick.backend.api.movie.dto.*;
 import com.flipflick.backend.api.movie.service.MovieService;
 import com.flipflick.backend.common.config.security.SecurityMember;
 import com.flipflick.backend.common.response.ApiResponse;
@@ -74,7 +71,7 @@ public class MovieController {
         return ApiResponse.success_only(SuccessStatus.SEND_MOVIE_WATCHED_SUCCESS);
     }
 
-    @Operation(summary = "본 영화 목록 조회", description = "쿼리 파라미터 memberId가 있으면 해당 회원의 본 영화 목록, 없으면 본인의 본 영화 목록을 페이징 조회합니다.")
+    @Operation(summary = "본 영화 목록 조회 API", description = "쿼리 파라미터 memberId가 있으면 해당 회원의 본 영화 목록, 없으면 본인의 본 영화 목록을 페이징 조회합니다.")
     @GetMapping("/watched-list")
     public ResponseEntity<ApiResponse<MovieBWLHListResponseDTO>> getMovieWatched(
             @AuthenticationPrincipal SecurityMember securityMember,
@@ -87,5 +84,28 @@ public class MovieController {
 
         MovieBWLHListResponseDTO movieBWLHListResponseDTO = movieService.getMovieWatched(userId, page, size);
         return ApiResponse.success(SuccessStatus.SEND_MOVIE_BOOKMARK_LIST_SUCCESS, movieBWLHListResponseDTO);
+    }
+
+    @Operation(summary = "좋아요, 싫어요 토글 API", description = "좋아요, 싫어요 토글 합니다. TYPE : LIKE / HATE")
+    @PostMapping("/like-hate")
+    public ResponseEntity<ApiResponse<Void>> movieLikeHate(@RequestBody MovieLikeHateRequestDTO movieLikeHateRequestDTO, @AuthenticationPrincipal SecurityMember securityMember){
+
+        movieService.movieLikeHate(securityMember.getId(), movieLikeHateRequestDTO);
+        return ApiResponse.success_only(SuccessStatus.SEND_MOVIE_LIKE_HATE_SUCCESS);
+    }
+
+    @Operation(summary = "좋아요 한 영화 목록 조회 API", description = "쿼리 파라미터 memberId가 있으면 해당 회원의 본 영화 목록, 없으면 본인의 본 영화 목록을 페이징 조회합니다.")
+    @GetMapping("/like-list")
+    public ResponseEntity<ApiResponse<MovieBWLHListResponseDTO>> getMovieLike(
+            @AuthenticationPrincipal SecurityMember securityMember,
+            @RequestParam(value = "memberId", required = false) Long memberId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        // memberId 파라미터가 없으면, 인증된 본인의 ID 사용
+        Long userId = (memberId != null) ? memberId : securityMember.getId();
+
+        MovieBWLHListResponseDTO movieBWLHListResponseDTO = movieService.getMovieLike(userId, page, size);
+        return ApiResponse.success(SuccessStatus.SEND_MOVIE_LIKE_LIST_SUCCESS, movieBWLHListResponseDTO);
     }
 }
