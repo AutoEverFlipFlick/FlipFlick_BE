@@ -1,6 +1,8 @@
 package com.flipflick.backend.api.movie.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.flipflick.backend.api.member.entity.Member;
+import com.flipflick.backend.api.member.repository.MemberRepository;
 import com.flipflick.backend.api.movie.dto.*;
 import com.flipflick.backend.api.movie.entity.*;
 import com.flipflick.backend.api.movie.repository.*;
@@ -10,6 +12,9 @@ import com.flipflick.backend.common.response.ErrorStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,11 +42,14 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final GenreRepository genreRepository;
     private final ProviderRepository providerRepository;
+    private final BookmarkRepository bookmarkRepository;
+    private final MemberRepository memberRepository;
+    private final WatchedRepository watchedRepository;
 
     // 영화 상세 조회 메서드(DB에 영화데이터가 없으면 TMDB호출 및 저장후 반환)
     @Transactional
-    public MovieDetailResponseDTO viewMovieDetail(SearchRequestIdDTO dto) {
-        Long tmdbId = dto.getTmdbId();
+    public MovieDetailResponseDTO viewMovieDetail(SearchRequestIdDTO searchRedquestIdDTO, Long memberId) {
+        Long tmdbId = searchRedquestIdDTO.getTmdbId();
 
         // 페치 조인으로 genre, media, provider 모두 미리 가져옴
         Movie movie = movieRepository.findWithAllByTmdbId(tmdbId)
@@ -49,7 +57,25 @@ public class MovieService {
 
         List<CastResponseDTO> casts = fetchCasts(tmdbId);
 
+        boolean myBookmark  = false;
+        boolean myWatched   = false;
+        boolean myLike      = false;
+        boolean myHate      = false;
+
+        if (memberId != null) {
+            // Member 객체 한 번만 로드
+            Member member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new BadRequestException("존재하지 않는 회원입니다."));
+
+            myBookmark = bookmarkRepository.existsByMemberAndMovie(member, movie);
+            myWatched = watchedRepository.existsByMemberAndMovie(member, movie);
+
+            // 아래 두 줄은 레포지토리가 있을 경우
+            // myLike   = likeRepository.existsByMemberAndMovie(member, movie);
+            // myHate   = hateRepository.existsByMemberAndMovie(member, movie);
+        }
         return MovieDetailResponseDTO.builder()
+                .movieId(movie.getId())
                 .tmdbId(movie.getTmdbId())
                 .title(movie.getTitle())
                 .originalTitle(movie.getOriginalTitle())
@@ -84,6 +110,10 @@ public class MovieService {
                                 .build())
                         .collect(Collectors.toList()))
                 .casts(casts)
+                .myBookmark(myBookmark)
+                .myWatched(myWatched)
+                .myLike(myLike)
+                .myHate(myHate)
                 .build();
     }
 
@@ -272,5 +302,127 @@ public class MovieService {
                                 : imageBaseUrl + c.get("profile_path").asText())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    // 영화 찜 토글
+    @Transactional
+    public void movieBookmark(MovieBWLHRequestDTO movieBWLHRequestDTO, Long memberId) {
+
+        // 영화 존재 확인
+        Movie movie = movieRepository.findById(movieBWLHRequestDTO.getMovieId())
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_MOVIE_EXCEPTION.getMessage()));
+
+        // 회원 존재 확인
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.INCORRECT_USER_EXCEPTION.getMessage()));
+
+        // 찜 여부 체크 → 있으면 delete, 없으면 save
+        bookmarkRepository.findByMemberAndMovie(member, movie)
+                .ifPresentOrElse(
+                        bm -> bookmarkRepository.delete(bm), () -> {
+                            Bookmark newBm = Bookmark.builder()
+                                    .movie(movie)
+                                    .member(member)
+                                    .build();
+                            bookmarkRepository.save(newBm);
+                        }
+                );
+    }
+
+    // 내가 찜한 영화들 조회
+    @Transactional(readOnly = true)
+    public MovieBWLHListResponseDTO getBookmarkedMovies(Long memberId, int page, int size) {
+
+        // 회원 검증
+        if (!memberRepository.existsById(memberId)) {
+            throw new BadRequestException(ErrorStatus.INCORRECT_USER_EXCEPTION.getMessage());
+        }
+
+        // 내림차순 정렬
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<Bookmark> bmPage = bookmarkRepository.findByMember_Id(memberId, pageRequest);
+
+        var content = bmPage.getContent().stream()
+                .map(bm -> {
+                    var m = bm.getMovie();
+                    return new MovieBWLHResponseDTO(
+                            m.getTmdbId(),
+                            m.getPosterImg(),
+                            m.getTitle(),
+                            m.getReleaseDate().getYear()
+                    );
+                })
+                .collect(Collectors.toList());
+
+        return MovieBWLHListResponseDTO.builder()
+                .totalElements(bmPage.getTotalElements())
+                .totalPages(bmPage.getTotalPages())
+                .page(bmPage.getNumber())
+                .size(bmPage.getSize())
+                .isLast(bmPage.isLast())
+                .content(content)
+                .build();
+    }
+
+    // 영화 봤어요 토글
+    @Transactional
+    public void movieWatched(MovieBWLHRequestDTO movieBWLHRequestDTO, Long memberId) {
+
+        // 영화 존재 확인
+        Movie movie = movieRepository.findById(movieBWLHRequestDTO.getMovieId())
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_MOVIE_EXCEPTION.getMessage()));
+
+        // 회원 존재 확인
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadRequestException(ErrorStatus.INCORRECT_USER_EXCEPTION.getMessage()));
+
+        // 봤어요 여부 체크 → 있으면 delete, 없으면 save
+        watchedRepository.findByMemberAndMovie(member, movie)
+                .ifPresentOrElse(
+                        watched -> watchedRepository.delete(watched), () -> {
+                            Watched watched = Watched.builder()
+                                    .movie(movie)
+                                    .member(member)
+                                    .build();
+                            watchedRepository.save(watched);
+                        }
+                );
+    }
+
+    // 내가 찜한 영화들 조회
+    @Transactional(readOnly = true)
+    public MovieBWLHListResponseDTO getMovieWatched(Long memberId, int page, int size) {
+
+        // 회원 검증
+        if (!memberRepository.existsById(memberId)) {
+            throw new BadRequestException(ErrorStatus.INCORRECT_USER_EXCEPTION.getMessage());
+        }
+
+        // 내림차순 정렬
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<Watched> watchedPage = watchedRepository.findByMember_Id(memberId, pageRequest);
+
+        var content = watchedPage.getContent().stream()
+                .map(watched -> {
+                    var w = watched.getMovie();
+                    return new MovieBWLHResponseDTO(
+                            w.getTmdbId(),
+                            w.getPosterImg(),
+                            w.getTitle(),
+                            w.getReleaseDate().getYear()
+                    );
+                })
+                .collect(Collectors.toList());
+
+        return MovieBWLHListResponseDTO.builder()
+                .totalElements(watchedPage.getTotalElements())
+                .totalPages(watchedPage.getTotalPages())
+                .page(watchedPage.getNumber())
+                .size(watchedPage.getSize())
+                .isLast(watchedPage.isLast())
+                .content(content)
+                .build();
     }
 }

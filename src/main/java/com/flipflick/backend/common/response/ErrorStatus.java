@@ -34,6 +34,7 @@ public enum ErrorStatus {
     INVALID_IMAGE_URL(HttpStatus.BAD_REQUEST, "유효하지 않은 이미지 URL입니다."),
     FOLLOW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 팔로우 중입니다."),
     SELF_FOLLOW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "자신은 팔로우할 수 없습니다."),
+    INCORRECT_USER_EXCEPTION(HttpStatus.BAD_REQUEST,"올바르지 않은 회원입니다."),
 
     /**
      * 401 UNAUTHORIZED
