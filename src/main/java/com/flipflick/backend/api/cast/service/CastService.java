@@ -62,7 +62,6 @@ public class CastService {
                                 .sorted(Comparator.comparing(
                                                 Filmography::getReleaseDate,
                                                 Comparator.nullsLast(Comparator.naturalOrder()))
-                                        .reversed()
                                 )
                                 .map(f -> FilmographyDTO.builder()
                                         .tmdbId(f.getTmdbId())

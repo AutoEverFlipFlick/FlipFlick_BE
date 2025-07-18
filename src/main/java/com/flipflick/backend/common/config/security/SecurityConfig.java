@@ -96,6 +96,15 @@ public class SecurityConfig {
                         .requestMatchers("/admin").hasRole("ADMIN") // 관리자 페이지 Role 체크
                         .requestMatchers("/api/v1/search/movie", "/api/v1/search/cast").permitAll() // 검색 인증 허가
                         .requestMatchers("/api/v1/movie/view", "/api/v1/cast/view").permitAll() // 영화, 배우 상세 조회 인증 허가
+                        .requestMatchers("/api/v1/member/user-info", "/api/v1/member/user-info/*").permitAll()
+                        .requestMatchers("/api/v1/member/user-info").permitAll()
+                        .requestMatchers("/api/v1/playlist/all","/api/v1/playlist/{playListId}").permitAll()
+                        .requestMatchers("/api/v1/s3/image").permitAll()
+                        .requestMatchers("/api/v1/follow/**").permitAll()
+                        .requestMatchers("/api/v1/member/kakao").permitAll()
+                        .requestMatchers("/api/v1/member/naver").permitAll()
+                        .requestMatchers("/api/v1/member/check/nickname").permitAll()
+                        .requestMatchers("/api/v1/member/check/email").permitAll()
                         .anyRequest().authenticated()
                 );
 
