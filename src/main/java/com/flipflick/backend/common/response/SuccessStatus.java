@@ -42,6 +42,7 @@ public enum SuccessStatus {
     CHECK_EMAIL_DUPLICATE(HttpStatus.OK, "이메일 중복 검사 결과입니다."),
     CHECK_NICKNAME_DUPLICATE(HttpStatus.OK, "닉네임 중복 검사 결과입니다."),
     IMAGE_DELETE_SUCCESS(HttpStatus.OK,"이미지 삭제 성공"),
+    UPDATE_SOCIAL_INFO_SUCCESS(HttpStatus.OK,"소셜 로그인 정보 설정 성공"),
     REISSUE_SUCCESS(HttpStatus.OK, "access토큰 재발급 성공");
     /**
      * 201

@@ -1,9 +1,6 @@
 package com.flipflick.backend.api.member.service;
 
-import com.flipflick.backend.api.member.dto.LoginResponseDto;
-import com.flipflick.backend.api.member.dto.NaverTokenResponseDto;
-import com.flipflick.backend.api.member.dto.NaverUserInfo;
-import com.flipflick.backend.api.member.dto.NaverUserResponse;
+import com.flipflick.backend.api.member.dto.*;
 import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.entity.Role;
 import com.flipflick.backend.api.member.repository.MemberRepository;
@@ -84,7 +81,7 @@ public class NaverAuthService {
 
         Member member = Member.builder()
                 .email(randomEmail)
-                .nickname(userInfo.getName())
+                .nickname(null)
                 .socialType("NAVER")
                 .block(0)
                 .isDeleted(0)
@@ -96,7 +93,7 @@ public class NaverAuthService {
         return memberRepository.save(member);
     }
 
-    public LoginResponseDto naverLogin(String code, String state) {
+    public OauthLoginResponseDto naverLogin(String code, String state) {
         String accessToken = getAccessToken(code, state);
         NaverUserInfo userInfo = getUserInfo(accessToken);
         Member member = getOrRegisterUser(userInfo);
@@ -106,7 +103,9 @@ public class NaverAuthService {
 
         member.updateRefreshToken(jwtRefreshToken, 1000L * 60 * 60 * 24 * 7);
         memberRepository.save(member);
+        boolean isNew = (member.getNickname() == null);
 
-        return new LoginResponseDto(jwtAccessToken, jwtRefreshToken);
+
+        return new OauthLoginResponseDto(jwtAccessToken, jwtRefreshToken,isNew);
     }
 }

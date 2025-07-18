@@ -1,8 +1,6 @@
 package com.flipflick.backend.api.member.service;
 
-import com.flipflick.backend.api.member.dto.KakaoTokenResponseDto;
-import com.flipflick.backend.api.member.dto.KakaoUserInfo;
-import com.flipflick.backend.api.member.dto.LoginResponseDto;
+import com.flipflick.backend.api.member.dto.*;
 import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.entity.Role;
 import com.flipflick.backend.api.member.repository.MemberRepository;
@@ -79,7 +77,7 @@ public class KakaoAuthService {
         // 3. 새로운 유저 등록
         Member newMember = Member.builder()
                 .email(randomEmail)
-                .nickname(userInfo.getKakao_account().getProfile().getNickname())
+                .nickname(null)
                 .profileImage(null)
                 .socialType("KAKAO")
                 .socialId(kakaoId)
@@ -90,7 +88,7 @@ public class KakaoAuthService {
 
         return memberRepository.save(newMember);
     }
-    public LoginResponseDto kakaoLogin(String code) {
+    public OauthLoginResponseDto kakaoLogin(String code) {
         String accessToken = getAccessToken(code);
         KakaoUserInfo userInfo = getUserInfo(accessToken);
 
@@ -102,7 +100,10 @@ public class KakaoAuthService {
         member.updateRefreshToken(jwtRefreshToken, 1000L * 60 * 60 * 24 * 7);
         memberRepository.save(member);
 
-        return new LoginResponseDto(jwtAccessToken, jwtRefreshToken);
+        boolean isNew = (member.getNickname() == null);
+
+
+        return new OauthLoginResponseDto(jwtAccessToken, jwtRefreshToken, isNew);
     }
 
 
