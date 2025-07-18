@@ -44,6 +44,12 @@ public interface PlayListRepository extends JpaRepository<PlayList, Long> {
             "ORDER BY p.createdAt DESC " )
     Page<PlayList> searchByTitleContaining(@Param("keyword") String keyword, Pageable pageable);
 
+    // 닉네임으로 플레이리스트 조회 (최신순, hidden=false만)
+    @Query("SELECT p FROM PlayList p " +
+            "WHERE p.member.nickname = :nickname AND p.isDeleted = false AND p.hidden = false " +
+            "ORDER BY p.createdAt DESC")
+    Page<PlayList> findByMemberNicknameAndIsDeletedFalseAndHiddenFalseOrderByCreatedAtDesc(@Param("nickname") String nickname, Pageable pageable);
+
     // 소프트 삭제된 것 제외하고 단일 조회
     @Query("SELECT p FROM PlayList p WHERE p.id = :id AND p.isDeleted = false")
     Optional<PlayList> findByIdAndIsDeletedFalse(@Param("id") Long id);

@@ -178,4 +178,21 @@ public class PlayListController {
         PlayListResponseDto.BookmarkIds result = playListService.getBookmarkedPlayListIds(securityMember.getId());
         return ApiResponse.success(SuccessStatus.SEND_PLAYLIST_BOOKMARK_LIST_SUCCESS, result);
     }
+
+    @Operation(summary = "닉네임으로 플레이리스트 조회", description = "특정 사용자의 공개 플레이리스트를 최신순으로 조회합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "플레이리스트 조회 성공")
+    })
+    @GetMapping("/user/{nickname}")
+    public ResponseEntity<ApiResponse<PlayListResponseDto.PageResponse>> getPlayListsByNickname(
+            @Parameter(description = "사용자 닉네임", example = "영화매니아")
+            @PathVariable String nickname,
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기", example = "10")
+            @RequestParam(defaultValue = "10") int size) {
+
+        PlayListResponseDto.PageResponse result = playListService.getPlayListsByNickname(nickname, page, size);
+        return ApiResponse.success(SuccessStatus.SEND_PLAYLIST_LIST_SUCCESS, result);
+    }
 }

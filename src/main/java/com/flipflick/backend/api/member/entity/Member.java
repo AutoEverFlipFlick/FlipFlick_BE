@@ -59,9 +59,11 @@ public class Member extends BaseTimeEntity {
     // 프로필 이미지 변경
     public void updateProfileImage(String profileImage) { this.profileImage = profileImage;}
 
+    @Builder.Default
     @OneToMany(mappedBy = "followed")
     private List<Follow> followers = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "following")
     private List<Follow> followings = new ArrayList<>();
 }
