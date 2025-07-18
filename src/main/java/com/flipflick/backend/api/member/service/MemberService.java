@@ -179,4 +179,14 @@ public class MemberService {
         return memberRepository.existsByNickname(nickname);
     }
 
+    @Transactional
+    public void updateSocialInfo(Long memberId, SocialInfoRequestDto dto) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+        member.updateNickname(dto.getNickname());
+        member.updateProfileImage(dto.getProfileImage());
+
+    }
+
 }
