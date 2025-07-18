@@ -26,6 +26,11 @@ public enum ErrorStatus {
     NOT_REGISTER_MOVIE_EXCEPTION(HttpStatus.BAD_REQUEST, "존재하지 않는 영화 입니다."),
     NOT_REGISTER_CAST_EXCEPTION(HttpStatus.BAD_REQUEST,"존재하지 않는 배우 입니다."),
     EMPTY_FILE(HttpStatus.BAD_REQUEST, "업로드할 파일이 비어있습니다."),
+    REVIEW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 해당 영화에 리뷰를 작성하셨습니다."),
+    REVIEW_INVALID_STAR_RATING(HttpStatus.BAD_REQUEST, "별점은 1.0~5.0 사이의 0.5 단위로 입력해주세요."),
+    REVIEW_UPDATE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 리뷰만 수정할 수 있습니다."),
+    REVIEW_DELETE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 리뷰만 삭제할 수 있습니다."),
+    REVIEW_SELF_LIKE_HATE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 리뷰에는 좋아요/싫어요를 할 수 없습니다."),
 
     /**
      * 401 UNAUTHORIZED
@@ -54,6 +59,8 @@ public enum ErrorStatus {
     // PlayList 관련 에러
     PLAYLIST_NOT_FOUND(HttpStatus.NOT_FOUND, "플레이리스트를 찾을 수 없습니다."),
     MOVIE_NOT_FOUND(HttpStatus.NOT_FOUND, "영화 정보를 찾을 수 없습니다."),
+
+    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다."),
 
     /**
      * 500 SERVER_ERROR

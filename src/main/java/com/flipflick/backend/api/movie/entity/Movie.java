@@ -65,4 +65,7 @@ public class Movie extends BaseTimeEntity {
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MovieProvider> providers = new ArrayList<>();
 
+    public void updateVoteAverage(Double voteAverage) {
+        this.voteAverage = voteAverage;
+    }
 }
