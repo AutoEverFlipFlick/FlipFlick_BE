@@ -14,4 +14,5 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
             "providers.provider"
     })
     Optional<Movie> findWithAllByTmdbId(Long tmdbId);
+    Optional<Movie> findByTmdbId(Long tmdbId);
 }
