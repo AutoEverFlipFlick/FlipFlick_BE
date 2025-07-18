@@ -45,6 +45,8 @@ public enum SuccessStatus {
     SEND_REVIEW_DELETE_SUCCESS(HttpStatus.OK, "리뷰 삭제 성공"),
     SEND_REVIEW_LIST_SUCCESS(HttpStatus.OK, "리뷰 목록 조회 성공"),
     SEND_REVIEW_LIKE_HATE_SUCCESS(HttpStatus.OK, "리뷰 좋아요/싫어요 처리 성공"),
+    SEND_POPCORN_SCORE_SUCCESS(HttpStatus.OK, "팝콘지수 조회 성공"),
+    SEND_POPCORN_SCORE_RECALCULATE_SUCCESS(HttpStatus.OK, "팝콘지수 재계산 성공"),
 
     /**
      * 201

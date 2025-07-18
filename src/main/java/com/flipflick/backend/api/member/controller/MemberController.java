@@ -182,6 +182,4 @@ public class MemberController {
         return ApiResponse.success(SuccessStatus.REISSUE_SUCCESS, dto);
     }
 
-
-
 }
