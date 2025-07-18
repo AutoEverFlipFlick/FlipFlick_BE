@@ -10,6 +10,7 @@ import java.util.List;
 @Builder
 public class MovieDetailResponseDTO {
 
+    private Long movieId;
     private Long tmdbId;
     private String title;
     private String originalTitle;
@@ -18,11 +19,17 @@ public class MovieDetailResponseDTO {
     private String backgroundImg;
     private double popcorn;
     private double voteAverage;
+    private long likeCnt;
+    private long hateCnt;
     private LocalDate releaseDate;
     private int runtime;
     private int productionYear;
     private String productionCountry;
     private String ageRating;
+    private boolean myLike;
+    private boolean myHate;
+    private boolean myWatched;
+    private boolean myBookmark;
 
     private List<GenreDTO> genres;
     private List<String> images;
