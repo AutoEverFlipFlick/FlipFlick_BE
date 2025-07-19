@@ -33,10 +33,16 @@ public class Member extends BaseTimeEntity {
     private String password;
     private String socialType;
     private String socialId;
-    private Integer block;  // 0 : 정상, 1 : 정지, 2 : 차단
-    private Integer warnCount;
     private LocalDateTime blockDate;
     private String profileImage;
+
+    @Column(name = "block")
+    @Builder.Default
+    private Integer block = 0;  // 0 : 정상, 1 : 정지, 2 : 차단
+
+    @Column(name = "warn_count")
+    @Builder.Default
+    private Integer warnCount = 0;
     
     @Column(name = "popcorn")
     @Builder.Default
@@ -137,5 +143,39 @@ public class Member extends BaseTimeEntity {
         this.popcorn = 41.0;
         this.totalExp = 0.0;
     }
+    public String getPopcornGrade(Double popcornScore) {
+        if (popcornScore >= 81) return "팝콘기계";
+        else if (popcornScore >= 71) return "1 팝콘";
+        else if (popcornScore >= 61) return "2/3 팝콘";
+        else if (popcornScore >= 51) return "1/3 팝콘";
+        else if (popcornScore >= 41) return "빈 팝콘";
+        else if (popcornScore >= 31) return "옥수수 3";
+        else if (popcornScore >= 21) return "옥수수 2";
+        else return "옥수수 1";
+    }
+
+    public void addWarning() {
+        this.warnCount += 1;
+        this.warnPopcorn();
+    }
+
+    public void suspend() {
+        this.block = 1;
+        this.blockCount += 1;
+        this.blockDate = LocalDateTime.now();
+        this.blockPopcorn();
+    }
+
+    public void blockPermanently() {
+        this.block = 2;
+        this.blockDate = LocalDateTime.now();
+        this.blockPopcorn();
+    }
+
+    public void unblock() {
+        this.block = 0;
+        this.blockDate = null;
+    }
+
 }
 
