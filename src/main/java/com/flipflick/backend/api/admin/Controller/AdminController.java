@@ -5,11 +5,13 @@ import com.flipflick.backend.api.admin.dto.MemberStatusUpdateRequestDto;
 import com.flipflick.backend.api.admin.dto.MovieReviewCountResponseDto;
 import com.flipflick.backend.api.admin.dto.PopcornGradeResponseDto;
 import com.flipflick.backend.api.admin.service.AdminService;
+import com.flipflick.backend.api.member.dto.MemberListResponseDto;
 import com.flipflick.backend.common.response.ApiResponse;
 import com.flipflick.backend.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -58,5 +60,19 @@ public class AdminController {
     ) {
         adminService.updateMemberStatus(memberId, request.getStatus());
         return ApiResponse.success_only(SuccessStatus.MEMBER_STATUS_UPDATE_SUCCESS);
+    }
+
+    @Operation(summary = "회원 목록 조회 API", description = "회원 조회합니다.")
+    @GetMapping("/members")
+    public ResponseEntity<ApiResponse<Page<MemberListResponseDto>>> getMembers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword
+    ) {
+
+
+        Page<MemberListResponseDto> memberListResponseDto = adminService.getMembersWithStats(page, size, keyword);
+
+        return ApiResponse.success(SuccessStatus.MEMBER_LIST_SUCCESS,memberListResponseDto);
     }
 }

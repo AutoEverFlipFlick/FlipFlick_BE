@@ -4,6 +4,7 @@ import com.flipflick.backend.api.admin.dto.DashboardStatResponseDto;
 import com.flipflick.backend.api.admin.dto.MovieReviewCountResponseDto;
 import com.flipflick.backend.api.admin.dto.PopcornGradeResponseDto;
 import com.flipflick.backend.api.admin.dto.TimeSeriesData;
+import com.flipflick.backend.api.member.dto.MemberListResponseDto;
 import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.repository.MemberRepository;
 import com.flipflick.backend.api.review.repository.ReviewRepository;
@@ -11,8 +12,10 @@ import com.flipflick.backend.common.exception.BadRequestException;
 import com.flipflick.backend.common.exception.NotFoundException;
 import com.flipflick.backend.common.response.ErrorStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -167,5 +170,24 @@ public class AdminService {
             default:
                 throw new BadRequestException(ErrorStatus.INVALID_STATUS.getMessage());
         }
+    }
+
+    public Page<MemberListResponseDto> getMembersWithStats(int page, int size, String keyword) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Member> members;
+
+        if (keyword != null && !keyword.isBlank()) {
+            members = memberRepository.findByNicknameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                    keyword, keyword, pageable
+            );
+        } else {
+            members = memberRepository.findAll(pageable);
+        }
+
+        return members.map(member -> {
+            int reviewCount = reviewRepository.countByMember(member);
+            int postCount = 0;
+            return MemberListResponseDto.from(member, reviewCount, postCount);
+        });
     }
 }
