@@ -181,7 +181,6 @@ public class MemberController {
 
         return ApiResponse.success(SuccessStatus.REISSUE_SUCCESS, dto);
     }
-
     @Operation(summary = "이메일 중복 검사", description = "입력한 이메일이 중복되는지 확인합니다.")
     @GetMapping("/check/email")
     public ResponseEntity<ApiResponse<Boolean>> checkEmailDuplicate(@RequestParam String email) {
