@@ -1,8 +1,11 @@
 package com.flipflick.backend.api.alarm.controller;
 
+import com.flipflick.backend.api.alarm.dto.AlarmDTO;
 import com.flipflick.backend.api.alarm.entity.Alarm;
 import com.flipflick.backend.api.alarm.event.AlarmEvent;
 import com.flipflick.backend.api.alarm.service.AlarmService;
+import com.flipflick.backend.common.exception.BadRequestException;
+import com.flipflick.backend.common.response.ErrorStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -27,20 +30,33 @@ public class AlarmController {
     private final Map<Long, CopyOnWriteArrayList<SseEmitter>> emitters = new ConcurrentHashMap<>();
 
     //SSE 구독 @param userId 로그인된 사용자의 ID
-    @CrossOrigin(origins = "http://localhost:5173")
+    @CrossOrigin(
+            origins = "http://localhost:5173" )
     @Operation(summary = "알람 스트림 구독 API", description = "로그인된 사용자의 SSE 알람 스트림을 구독합니다.")
     @GetMapping("/stream")
     public SseEmitter subscribe(@RequestParam Long userId) {
+        if (userId == null || userId < 0) {
+            throw new BadRequestException(ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage());
+        }
         // 60분 타임아웃
         SseEmitter emitter = new SseEmitter(60 * 60 * 1000L);
 
-        emitters
-                .computeIfAbsent(userId, id -> new CopyOnWriteArrayList<>())
-                .add(emitter);
+        // 중복 연결 방지: 기존 emitter 닫기
+        List<SseEmitter> list = emitters.computeIfAbsent(userId, id -> new CopyOnWriteArrayList<>());
+        list.forEach(SseEmitter::complete); // 기존 emitter들 닫기
+        list.clear(); // 다 지우고
+        list.add(emitter); // 새 emitter만 등록
+
+//        emitters
+//                .computeIfAbsent(userId, id -> new CopyOnWriteArrayList<>())
+//                .add(emitter); // 여러 emitter 허용
+
+        emitter.onError((ex) -> {
+            emitters.get(userId).remove(emitter);
+        });
 
         // 구독 직후 아직 읽지 않은 알람을 전송
-        List<Alarm> unread = alarmService.getAlarms(userId)
-                .stream()
+        List<AlarmDTO> unread = alarmService.getAlarms(userId).stream()
                 .filter(a -> !a.getIsRead())
                 .toList();
 
@@ -60,9 +76,11 @@ public class AlarmController {
         Alarm alarm = event.getAlarm();
         Long toUser = alarm.getReceivedId();
 
+        AlarmDTO dto = AlarmDTO.from(alarm); // ✅ DTO 변환
+
         List<SseEmitter> userEmitters = emitters.get(toUser);
         if (userEmitters != null) {
-            userEmitters.forEach(em -> safeSend(em, alarm));
+            userEmitters.forEach(em -> safeSend(em, dto)); // ✅ DTO를 안전하게 전송
         }
     }
 
@@ -70,7 +88,7 @@ public class AlarmController {
     // 과거 알람 전체 조회
     @Operation(summary = "알람 히스토리 조회", description = "사용자의 과거 알람을 최신순으로 조회합니다.")
     @GetMapping
-    public List<Alarm> getHistory(@RequestParam Long userId) {
+    public List<AlarmDTO> getHistory(@RequestParam Long userId) {
         return alarmService.getAlarms(userId);
     }
 
@@ -83,16 +101,11 @@ public class AlarmController {
     }
 
     // 안전하게 SSE 이벤트를 보내는 헬퍼
-    private void safeSend(SseEmitter emitter, Alarm alarm) {
+    private void safeSend(SseEmitter emitter, AlarmDTO alarm) {
         try {
-            emitter.send(
-                    SseEmitter.event()
-                            .name("alarm")
-                            .data(alarm)
-            );
+            emitter.send(SseEmitter.event().name("alarm").data(alarm));
         } catch (IOException e) {
-            // 보낼 수 없는 emitter는 제거
-            emitters.values().forEach(list -> list.remove(emitter));
+            emitters.forEach((userId, emitterList) -> emitterList.remove(emitter));
         }
     }
 }

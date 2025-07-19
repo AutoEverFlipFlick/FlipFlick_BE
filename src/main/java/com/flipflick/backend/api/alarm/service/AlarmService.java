@@ -1,5 +1,6 @@
 package com.flipflick.backend.api.alarm.service;
 
+import com.flipflick.backend.api.alarm.dto.AlarmDTO;
 import com.flipflick.backend.api.alarm.entity.Alarm;
 import com.flipflick.backend.api.alarm.event.AlarmEvent;
 import com.flipflick.backend.api.alarm.repository.AlarmRepository;
@@ -28,13 +29,17 @@ public class AlarmService {
         alarm.setReceivedId(toUserId);
         alarm.setCreatedAt(LocalDateTime.now());
         Alarm saved = repo.save(alarm);
+
         publisher.publishEvent(new AlarmEvent(this, saved));
         return saved;
     }
 
     /** 유저별 알람 조회 (최신순) */
-    public List<Alarm> getAlarms(Long userId) {
-        return repo.findByReceivedIdOrderByCreatedAtDesc(userId);
+    @Transactional
+    public List<AlarmDTO> getAlarms(Long userId) {
+        return repo.findByReceivedIdOrderByCreatedAtDesc(userId).stream()
+                .map(AlarmDTO::from)
+                .toList();
     }
 
     /** 읽음 처리 */
