@@ -35,6 +35,7 @@ public enum ErrorStatus {
     FOLLOW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 팔로우 중입니다."),
     SELF_FOLLOW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "자신은 팔로우할 수 없습니다."),
     INCORRECT_USER_EXCEPTION(HttpStatus.BAD_REQUEST,"올바르지 않은 회원입니다."),
+    INVALID_STATUS(HttpStatus.BAD_REQUEST,"유효하지 않은 상태입니다."),
 
     /**
      * 401 UNAUTHORIZED
@@ -52,6 +53,8 @@ public enum ErrorStatus {
     /**
      * 403 FORBIDDEN
      */
+    MEMBER_BLOCKED(HttpStatus.FORBIDDEN, "차단된 회원입니다."),
+    MEMBER_SUSPENDED(HttpStatus.FORBIDDEN, "정지된 회원입니다."),
 
     /**
      * 404 NOT_FOUND

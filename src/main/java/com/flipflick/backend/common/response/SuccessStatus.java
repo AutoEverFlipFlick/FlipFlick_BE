@@ -57,6 +57,11 @@ public enum SuccessStatus {
     UPDATE_SOCIAL_INFO_SUCCESS(HttpStatus.OK,"소셜 로그인 정보 설정 성공"),
     SEND_MOVIE_LIKE_HATE_SUCCESS(HttpStatus.OK,"좋아요, 싫어요 토글 성공"),
     SEND_MOVIE_LIKE_LIST_SUCCESS(HttpStatus.OK,"좋아요 한 영화 목록 조회 성공"),
+    DASHBOARD_STAT_READ_SUCCESS(HttpStatus.OK, "대시보드 통계 조회 성공"),
+    POPCORN_GRADE_STAT_READ_SUCCESS(HttpStatus.OK, "팝콘 등급 분포 조회 성공"),
+    TOP_MOVIES_BY_REVIEW_SUCCESS(HttpStatus.OK, "리뷰 많은 영화 Top 5 조회 성공"),
+    MEMBER_LIST_SUCCESS(HttpStatus.OK, "회원 목록 조회 성공"),
+    MEMBER_STATUS_UPDATE_SUCCESS(HttpStatus.OK, "회원 상태 변경 성공"),
     SEND_MEMBER_LIST_SUCCESS(HttpStatus.OK,"사용자 리스트 조회 성공"),
 
     /**

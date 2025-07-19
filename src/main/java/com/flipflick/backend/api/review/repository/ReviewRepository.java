@@ -1,5 +1,7 @@
 package com.flipflick.backend.api.review.repository;
 
+import com.flipflick.backend.api.admin.dto.MovieReviewCountResponseDto;
+import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.review.entity.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,5 +51,33 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             "WHERE r.member.nickname = :nickname AND r.isDeleted = false " +
             "ORDER BY r.createdAt DESC")
     Page<Review> findByMemberNicknameAndIsDeletedFalseOrderByCreatedAtDesc(@Param("nickname") String nickname, Pageable pageable);
+
+    // 날짜별 전체 리뷰 수
+    @Query(value = """
+        SELECT CAST(r.created_at AS DATE) AS date, COUNT(*) AS count
+        FROM review r
+        WHERE CAST(r.created_at AS DATE) <= :endDate
+        GROUP BY CAST(r.created_at AS DATE)
+        ORDER BY CAST(r.created_at AS DATE)
+    """, nativeQuery = true)
+    List<Object[]> countReviewsUntilDate(@Param("endDate") LocalDate endDate);
+
+    // 날짜별 신규 리뷰 수
+    @Query(value = """
+        SELECT CAST(r.created_at AS DATE) AS date, COUNT(*) AS count
+        FROM review r
+        WHERE CAST(r.created_at AS DATE) BETWEEN :startDate AND :endDate
+        GROUP BY CAST(r.created_at AS DATE)
+        ORDER BY CAST(r.created_at AS DATE)
+    """, nativeQuery = true)
+    List<Object[]> countNewReviewsByDate(@Param("startDate") LocalDate startDate,
+                                         @Param("endDate") LocalDate endDate);
+
+
+    @Query("SELECT new com.flipflick.backend.api.admin.dto.MovieReviewCountResponseDto(r.movie.title, COUNT(r)) " +
+            "FROM Review r GROUP BY r.movie.id, r.movie.title ORDER BY COUNT(r) DESC")
+    List<MovieReviewCountResponseDto> findTop5MoviesByReviewCount(Pageable pageable);
+
+    int countByMember(Member member);
 
 }
