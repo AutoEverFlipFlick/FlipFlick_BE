@@ -1,6 +1,8 @@
 package com.flipflick.backend.api.member.repository;
 
 import com.flipflick.backend.api.member.entity.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,5 +24,7 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
     List<Member> findExpiredSuspensions(@Param("now") LocalDateTime now);
     boolean existsByEmail(String email);
     boolean existsByNickname(String nickname);
+
+    Page<Member> findByNicknameContaining(String keyword, Pageable pageable);
 
 }

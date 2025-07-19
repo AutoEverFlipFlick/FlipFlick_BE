@@ -1,20 +1,32 @@
 package com.flipflick.backend.api.search.service;
 
+import com.flipflick.backend.api.follow.repository.FollowRepository;
+import com.flipflick.backend.api.member.entity.Member;
+import com.flipflick.backend.api.member.repository.MemberRepository;
+import com.flipflick.backend.api.playlist.entity.MoviePlaylist;
+import com.flipflick.backend.api.playlist.entity.PlayList;
+import com.flipflick.backend.api.playlist.repository.MoviePlaylistRepository;
+import com.flipflick.backend.api.playlist.repository.PlayListBookmarkRepository;
+import com.flipflick.backend.api.playlist.repository.PlayListRepository;
 import com.flipflick.backend.api.search.dto.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriBuilder;
 
 import java.net.URI;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class SearchService {
 
     @Value("${tmdb.api.key}")
@@ -24,10 +36,11 @@ public class SearchService {
     private String imageBaseUrl;
 
     private final WebClient tmdbWebClient;
-
-    public SearchService(WebClient tmdbWebClient) {
-        this.tmdbWebClient = tmdbWebClient;
-    }
+    private final PlayListRepository playListRepository;
+    private final MoviePlaylistRepository moviePlaylistRepository;
+    private final PlayListBookmarkRepository playListBookmarkRepository;
+    private final MemberRepository memberRepository;
+    private final FollowRepository followRepository;
 
     public MovieListPageResponseDTO searchMovieList(SearchRequestDTO searchRequestDTO) {
 
@@ -133,6 +146,100 @@ public class SearchService {
                                 : null
                 )
                 .knownFor(knownForNames)
+                .build();
+    }
+
+    // 플레이리스트 조회
+    public PlayListPageResponseDTO searchPlaylist(SearchRequestDTO searchRequestDTO) {
+
+        Pageable pageable = PageRequest.of(searchRequestDTO.getPage(), 20);
+
+        // hidden=false, isDeleted=false, 제목 LIKE 검색
+        Page<PlayList> page = playListRepository.searchByTitleContaining(
+                searchRequestDTO.getQuery(), pageable
+        );
+
+        List<PlayListResponseDTO> content = page.stream()
+                .map(playList -> {
+                    Long id = playList.getId();
+
+                    // 영화 개수, 북마크 개수, 썸네일 URL 조회
+                    Integer movieCount = moviePlaylistRepository.countByPlayListId(id);
+                    Integer bookmarkCount = playListBookmarkRepository.countByPlayListId(id);
+                    String thumbnailUrl = moviePlaylistRepository
+                            .findFirstByPlayListIdOrderByCreatedAtAsc(id)
+                            .map(MoviePlaylist::getPosterUrl)
+                            .orElse(null);
+
+                    return PlayListResponseDTO.builder()
+                            .playListId(id)
+                            .title(playList.getTitle())
+                            .nickname(playList.getMember().getNickname())
+                            .thumbnailUrl(thumbnailUrl)
+                            .movieCount(movieCount)
+                            .bookmarkCount(bookmarkCount)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        return PlayListPageResponseDTO.builder()
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .page(page.getNumber())
+                .size(page.getSize())
+                .isLast(page.isLast())
+                .content(content)
+                .build();
+    }
+
+    // 회원 검색 메서드
+    public MemberListPageResponseDTO searchMember(SearchRequestDTO searchRequestDTO, Long currentUserId) {
+
+        Pageable pageable = PageRequest.of(searchRequestDTO.getPage(), 20, Sort.by("nickname").ascending());
+        Page<Member> page = memberRepository.findByNicknameContaining(searchRequestDTO.getQuery(), pageable);
+
+        // 검색된 회원 ID 목록
+        List<Long> memberIds = page.stream()
+                .map(Member::getId)
+                .collect(Collectors.toList());
+
+        // 팔로워 수 일괄 조회
+        Map<Long, Long> followerCountMap = followRepository
+                .countFollowersByFollowedIds(memberIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+
+        // 로그인 유저가 팔로우 중인 ID 목록 일괄 조회
+        final Set<Long> followedSet;
+        if (currentUserId != null) {
+            List<Long> followedIds = followRepository
+                    .findFollowedIdsByFollowingAndFollowedIds(currentUserId, memberIds);
+            followedSet = new HashSet<>(followedIds);
+        } else {
+            followedSet = Collections.emptySet();
+        }
+
+        List<MemberListResponseDTO> content = page.stream()
+                .map(m -> MemberListResponseDTO.builder()
+                        .memberId(m.getId())
+                        .nickname(m.getNickname())
+                        .followCnt(followerCountMap.getOrDefault(m.getId(), 0L))
+                        .followed(followedSet.contains(m.getId()))
+                        .profileImage(m.getProfileImage())
+                        .build()
+                )
+                .collect(Collectors.toList());
+
+        return MemberListPageResponseDTO.builder()
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .page(page.getNumber())
+                .size(page.getSize())
+                .isLast(page.isLast())
+                .content(content)
                 .build();
     }
 

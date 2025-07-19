@@ -57,6 +57,7 @@ public enum SuccessStatus {
     UPDATE_SOCIAL_INFO_SUCCESS(HttpStatus.OK,"소셜 로그인 정보 설정 성공"),
     SEND_MOVIE_LIKE_HATE_SUCCESS(HttpStatus.OK,"좋아요, 싫어요 토글 성공"),
     SEND_MOVIE_LIKE_LIST_SUCCESS(HttpStatus.OK,"좋아요 한 영화 목록 조회 성공"),
+    SEND_MEMBER_LIST_SUCCESS(HttpStatus.OK,"사용자 리스트 조회 성공"),
 
     /**
      * 201
