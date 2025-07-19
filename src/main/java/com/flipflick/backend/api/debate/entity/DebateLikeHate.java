@@ -1,7 +1,6 @@
 package com.flipflick.backend.api.debate.entity;
 
 import com.flipflick.backend.api.member.entity.Member;
-import com.flipflick.backend.api.debate.entity.Debate;
 import com.flipflick.backend.api.review.entity.LikeHateType;
 import com.flipflick.backend.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
