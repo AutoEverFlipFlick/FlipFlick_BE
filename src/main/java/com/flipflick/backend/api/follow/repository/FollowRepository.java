@@ -25,4 +25,21 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
             "AND f.createdAt < :endOfDay")
     Integer countFollowsByMemberIdUntilDate(@Param("memberId") Long memberId,
                                             @Param("endOfDay") LocalDateTime endOfDay);
+
+    // 여러 회원에 대한 팔로워 수를 한 번에 조회
+    @Query("SELECT f.followed.id, COUNT(f) " +
+            "FROM Follow f " +
+            "WHERE f.followed.id IN :ids " +
+            "GROUP BY f.followed.id")
+    List<Object[]> countFollowersByFollowedIds(@Param("ids") List<Long> ids);
+
+    // 로그인 유저가 여러 회원을 팔로우하고 있는지 한 번에 조회
+    @Query("SELECT f.followed.id " +
+            "FROM Follow f " +
+            "WHERE f.following.id = :followingId " +
+            "  AND f.followed.id IN :ids")
+    List<Long> findFollowedIdsByFollowingAndFollowedIds(
+            @Param("followingId") Long followingId,
+            @Param("ids") List<Long> ids
+    );
 }
