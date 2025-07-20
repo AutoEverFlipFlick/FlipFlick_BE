@@ -1,9 +1,6 @@
 package com.flipflick.backend.api.admin.Controller;
 
-import com.flipflick.backend.api.admin.dto.DashboardStatResponseDto;
-import com.flipflick.backend.api.admin.dto.MemberStatusUpdateRequestDto;
-import com.flipflick.backend.api.admin.dto.MovieReviewCountResponseDto;
-import com.flipflick.backend.api.admin.dto.PopcornGradeResponseDto;
+import com.flipflick.backend.api.admin.dto.*;
 import com.flipflick.backend.api.admin.service.AdminService;
 import com.flipflick.backend.api.member.dto.MemberListResponseDto;
 import com.flipflick.backend.common.response.ApiResponse;
@@ -75,4 +72,27 @@ public class AdminController {
 
         return ApiResponse.success(SuccessStatus.MEMBER_LIST_SUCCESS,memberListResponseDto);
     }
+
+    @Operation(summary = "신고 처리 API", description = "신고 ID와 액션을 받아 신고 처리")
+    @PatchMapping("/report/{reportId}/handle")
+    public ResponseEntity<ApiResponse<Void>> handleReport(
+            @PathVariable Long reportId,
+            @RequestBody ReportActionRequestDto request
+    ) {
+        adminService.processReport(reportId, request);
+        return ApiResponse.success_only(SuccessStatus.REPORT_UPDATE_SUCCESS);
+    }
+
+    @Operation(summary = "신고 목록 조회 API", description = "신고 목록을 조회합니다.")
+    @GetMapping("/reports")
+    public ResponseEntity<ApiResponse<Page<ReportAdminResponseDto>>> getReports(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword, // 신고자 닉네임 검색
+            @RequestParam(required = false, defaultValue = "전체") String status // 전체 / 처리 / 미처리
+    ) {
+        Page<ReportAdminResponseDto> result = adminService.getReportsWithFilter(page, size, keyword, status);
+        return ApiResponse.success(SuccessStatus.REPORT_LIST_SUCCESS, result);
+    }
+
 }

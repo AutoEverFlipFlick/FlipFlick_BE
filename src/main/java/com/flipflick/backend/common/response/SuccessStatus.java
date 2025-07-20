@@ -63,6 +63,8 @@ public enum SuccessStatus {
     MEMBER_LIST_SUCCESS(HttpStatus.OK, "회원 목록 조회 성공"),
     MEMBER_STATUS_UPDATE_SUCCESS(HttpStatus.OK, "회원 상태 변경 성공"),
     SEND_MEMBER_LIST_SUCCESS(HttpStatus.OK,"사용자 리스트 조회 성공"),
+    REPORT_LIST_SUCCESS(HttpStatus.OK,"신고 목록 조회 성공"),
+    REPORT_UPDATE_SUCCESS(HttpStatus.OK,"신고 처리 성공"),
 
     /**
      * 201

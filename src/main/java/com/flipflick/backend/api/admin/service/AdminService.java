@@ -1,12 +1,11 @@
 package com.flipflick.backend.api.admin.service;
 
-import com.flipflick.backend.api.admin.dto.DashboardStatResponseDto;
-import com.flipflick.backend.api.admin.dto.MovieReviewCountResponseDto;
-import com.flipflick.backend.api.admin.dto.PopcornGradeResponseDto;
-import com.flipflick.backend.api.admin.dto.TimeSeriesData;
+import com.flipflick.backend.api.admin.dto.*;
 import com.flipflick.backend.api.member.dto.MemberListResponseDto;
 import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.repository.MemberRepository;
+import com.flipflick.backend.api.report.entity.Report;
+import com.flipflick.backend.api.report.repository.ReportRepository;
 import com.flipflick.backend.api.review.repository.ReviewRepository;
 import com.flipflick.backend.common.exception.BadRequestException;
 import com.flipflick.backend.common.exception.NotFoundException;
@@ -16,12 +15,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -30,6 +27,7 @@ public class AdminService {
 
     private final MemberRepository memberRepository;
     private final ReviewRepository reviewRepository;
+    private final ReportRepository reportRepository;
 
     public DashboardStatResponseDto getDashboardStats() {
         Map<String, Map<String, List<TimeSeriesData>>> stats = new HashMap<>();
@@ -190,4 +188,34 @@ public class AdminService {
             return MemberListResponseDto.from(member, reviewCount, postCount);
         });
     }
+
+    @Transactional
+    public void processReport(Long reportId,ReportActionRequestDto request) {
+        Report report = reportRepository.findById(reportId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.REPORT_NOT_FOUND.getMessage()));
+
+        Member target = report.getTarget();
+
+        if (report.isHandled()) {
+            throw new BadRequestException(ErrorStatus.ALREADY_REPORT.getMessage());
+        }
+
+        switch (request.getAction()) {
+            case "경고" -> target.addWarning();
+            case "정지" -> target.suspend();
+            case "차단" -> target.blockPermanently();
+            case "기각" -> {} // 아무것도 안함
+            default -> throw new BadRequestException(ErrorStatus.INVALID_REPORT_ACTION.getMessage());
+        }
+
+        report.markAsHandled();
+    }
+
+    public Page<ReportAdminResponseDto> getReportsWithFilter(int page, int size, String keyword, String status) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Report> reports = reportRepository.findReportsFiltered(keyword, status, pageable);
+
+        return reports.map(ReportAdminResponseDto::from);
+    }
+
 }
