@@ -93,8 +93,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/member/login", "/api/v1/member/signup", "/api/v1/member/reissue", "/v3/api-docs/**",
                                 "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/h2-console/**", "/health", "/api-doc").permitAll() // 회원, 스웨거, H2 인증 허가
-                        .requestMatchers("/admin").hasRole("ADMIN") // 관리자 페이지 Role 체크
                         .requestMatchers("/api/v1/search/movie", "/api/v1/search/cast", "/api/v1/search/playlist", "/api/v1/search/member").permitAll() // 검색 인증 허가
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/search/movie", "/api/v1/search/cast").permitAll() // 검색 인증 허가
                         .requestMatchers("/api/v1/movie/view", "/api/v1/cast/view").permitAll() // 영화, 배우 상세 조회 인증 허가
                         .requestMatchers("/api/v1/member/user-info", "/api/v1/member/user-info/*", "/api/v1/member/kakao", "/api/v1/member/naver", "/api/v1/member/check/nickname", "/api/v1/member/check/email").permitAll()
                         .requestMatchers("/api/v1/playlist/all","/api/v1/playlist/{playListId}").permitAll()

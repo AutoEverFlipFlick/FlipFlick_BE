@@ -14,6 +14,7 @@ public class MemberResponseDto {
     private String profileImage;
     private long followerCount;
     private long followingCount;
+    private String role;
 
     public static MemberResponseDto of(Member member) {
         return MemberResponseDto.builder()
@@ -23,6 +24,7 @@ public class MemberResponseDto {
                 .profileImage(member.getProfileImage())
                 .followerCount(member.getFollowers().size())     // ← 여기도 연관관계 필요
                 .followingCount(member.getFollowings().size())   // ← 여기도 연관관계 필요
+                .role(member.getRole().name())
                 .build();
     }
 }
