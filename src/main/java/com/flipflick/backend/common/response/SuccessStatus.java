@@ -58,6 +58,12 @@ public enum SuccessStatus {
     SEND_MOVIE_LIKE_HATE_SUCCESS(HttpStatus.OK,"좋아요, 싫어요 토글 성공"),
     SEND_MOVIE_LIKE_LIST_SUCCESS(HttpStatus.OK,"좋아요 한 영화 목록 조회 성공"),
     SEND_MEMBER_LIST_SUCCESS(HttpStatus.OK,"사용자 리스트 조회 성공"),
+    SEND_DEBATE_CREATE_SUCCESS(HttpStatus.OK, "토론 작성 성공"),
+    SEND_DEBATE_UPDATE_SUCCESS(HttpStatus.OK, "토론 수정 성공"),
+    SEND_DEBATE_DELETE_SUCCESS(HttpStatus.OK, "토론 삭제 성공"),
+    SEND_DEBATE_LIST_SUCCESS(HttpStatus.OK, "토론 목록 조회 성공"),
+    SEND_DEBATE_LIKE_HATE_SUCCESS(HttpStatus.OK, "토론 좋아요/싫어요 처리 성공"),
+    SEND_DEBATE_DETAIL_SUCCESS(HttpStatus.OK, "토론 상세 조회 성공"),
 
     /**
      * 201
