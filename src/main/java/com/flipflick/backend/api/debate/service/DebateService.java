@@ -1,0 +1,284 @@
+package com.flipflick.backend.api.debate.service;
+
+import com.flipflick.backend.api.debate.dto.DebateRequestDto;
+import com.flipflick.backend.api.debate.dto.DebateResponseDto;
+import com.flipflick.backend.api.debate.entity.Debate;
+import com.flipflick.backend.api.debate.entity.DebateLikeHate;
+import com.flipflick.backend.api.debate.repository.DebateLikeHateRepository;
+import com.flipflick.backend.api.debate.repository.DebateRepository;
+import com.flipflick.backend.api.member.entity.Member;
+import com.flipflick.backend.api.member.repository.MemberRepository;
+import com.flipflick.backend.api.movie.entity.Movie;
+import com.flipflick.backend.api.movie.repository.MovieRepository;
+import com.flipflick.backend.api.review.entity.LikeHateType;
+import com.flipflick.backend.common.exception.BadRequestException;
+import com.flipflick.backend.common.exception.NotFoundException;
+import com.flipflick.backend.common.response.ErrorStatus;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+@Transactional(readOnly = true)
+public class DebateService {
+
+    private final DebateRepository debateRepository;
+    private final DebateLikeHateRepository debateLikeHateRepository;
+    private final MemberRepository memberRepository;
+    private final MovieRepository movieRepository;
+
+    // 1. 토론 작성
+    @Transactional
+    public DebateResponseDto.Create createDebate(Long memberId, DebateRequestDto.Create request) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+        Movie movie = movieRepository.findByTmdbId(request.getTmdbId())
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.NOT_REGISTER_MOVIE_EXCEPTION.getMessage()));
+
+        Debate debate = Debate.builder()
+                .member(member)
+                .movie(movie)
+                .content(request.getContent())
+                .spoiler(request.getSpoiler())
+                .build();
+
+        debate = debateRepository.save(debate);
+
+        return DebateResponseDto.Create.builder()
+                .debateId(debate.getId())
+                .content(debate.getContent())
+                .build();
+    }
+
+    // 2. 토론 수정
+    @Transactional
+    public DebateResponseDto.Update updateDebate(Long memberId, Long debateId, DebateRequestDto.Update request) {
+        Debate debate = debateRepository.findByIdAndIsDeletedFalse(debateId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.DEBATE_NOT_FOUND.getMessage()));
+
+        if (!debate.getMember().getId().equals(memberId)) {
+            throw new BadRequestException(ErrorStatus.DEBATE_UPDATE_DENIED.getMessage());
+        }
+
+        debate.updateDebate(request.getContent(), request.getSpoiler());
+
+        return DebateResponseDto.Update.builder()
+                .debateId(debate.getId())
+                .content(debate.getContent())
+                .build();
+    }
+
+    // 3. 토론 삭제
+    @Transactional
+    public DebateResponseDto.Delete deleteDebate(Long memberId, Long debateId) {
+        Debate debate = debateRepository.findByIdAndIsDeletedFalse(debateId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.DEBATE_NOT_FOUND.getMessage()));
+
+        if (!debate.getMember().getId().equals(memberId)) {
+            throw new BadRequestException(ErrorStatus.DEBATE_DELETE_DENIED.getMessage());
+        }
+
+        debate.softDelete();
+
+        return DebateResponseDto.Delete.builder()
+                .debateId(debate.getId())
+                .message("토론가 삭제되었습니다.")
+                .build();
+    }
+
+    // 4. 토론 목록 조회 (최신순)
+    public DebateResponseDto.PageResponse getDebatesByLatest(Long tmdbId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Debate> debatePage = debateRepository.findByMovieTmdbIdAndIsDeletedFalseOrderByCreatedAtDesc(tmdbId, pageable);
+
+        Page<DebateResponseDto.Detail> detailPage = debatePage.map(this::convertToDetail);
+        return DebateResponseDto.PageResponse.from(detailPage);
+    }
+
+    // 5. 토론 목록 조회 (인기순)
+    public DebateResponseDto.PageResponse getDebatesByPopularity(Long tmdbId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Debate> debatePage = debateRepository.findByMovieTmdbIdAndIsDeletedFalseOrderByLikeCntDesc(tmdbId, pageable);
+
+        Page<DebateResponseDto.Detail> detailPage = debatePage.map(this::convertToDetail);
+        return DebateResponseDto.PageResponse.from(detailPage);
+    }
+
+    // 6. 토론 좋아요/싫어요 토글
+    @Transactional
+    public DebateResponseDto.LikeHate toggleLikeHate(Long memberId, DebateRequestDto.LikeHate request) {
+        Debate debate = debateRepository.findByIdAndIsDeletedFalse(request.getDebateId())
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.DEBATE_NOT_FOUND.getMessage()));
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+        // 자신의 토론에 좋아요/싫어요 불가
+        if (debate.getMember().getId().equals(memberId)) {
+            throw new BadRequestException(ErrorStatus.DEBATE_SELF_LIKE_HATE_DENIED.getMessage());
+        }
+
+        LikeHateType type = LikeHateType.valueOf(request.getType());
+
+        // 기존 좋아요/싫어요 조회
+        DebateLikeHate existingLikeHate = debateLikeHateRepository
+                .findByDebateIdAndMemberId(request.getDebateId(), memberId)
+                .orElse(null);
+
+        String message;
+
+        if (existingLikeHate != null) {
+            if (existingLikeHate.getType() == type) {
+                // 같은 타입이면 취소
+                debateLikeHateRepository.delete(existingLikeHate);
+                updateDebateLikeHateCount(debate, type, false);
+                message = type == LikeHateType.LIKE ? "좋아요가 취소되었습니다." : "싫어요가 취소되었습니다.";
+            } else {
+                // 다른 타입이면 변경
+                updateDebateLikeHateCount(debate, existingLikeHate.getType(), false); // 기존 것 감소
+                debateLikeHateRepository.delete(existingLikeHate);
+
+                DebateLikeHate newLikeHate = DebateLikeHate.builder()
+                        .debate(debate)
+                        .member(member)
+                        .type(type)
+                        .build();
+                debateLikeHateRepository.save(newLikeHate);
+
+                updateDebateLikeHateCount(debate, type, true); // 새로운 것 증가
+                message = type == LikeHateType.LIKE ? "좋아요로 변경되었습니다." : "싫어요로 변경되었습니다.";
+            }
+        } else {
+            // 새로 추가
+            DebateLikeHate newLikeHate = DebateLikeHate.builder()
+                    .debate(debate)
+                    .member(member)
+                    .type(type)
+                    .build();
+            debateLikeHateRepository.save(newLikeHate);
+
+            updateDebateLikeHateCount(debate, type, true);
+            message = type == LikeHateType.LIKE ? "좋아요가 추가되었습니다." : "싫어요가 추가되었습니다.";
+        }
+
+        return DebateResponseDto.LikeHate.builder()
+                .debateId(debate.getId())
+                .type(type.name())
+                .message(message)
+                .likeCnt(debate.getLikeCnt())
+                .hateCnt(debate.getHateCnt())
+                .build();
+    }
+
+    // 7. 닉네임으로 토론 목록 조회 (최신순)
+    public DebateResponseDto.PageResponse getDebatesByNicknameLatest(String nickname, int page, int size) {
+        // 닉네임으로 사용자 존재 확인
+        Member member = memberRepository.findByNickname(nickname)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Debate> debatePage = debateRepository.findByMemberNicknameAndIsDeletedFalseOrderByCreatedAtDesc(nickname, pageable);
+
+        Page<DebateResponseDto.Detail> detailPage = debatePage.map(this::convertToDetail);
+        return DebateResponseDto.PageResponse.from(detailPage);
+    }
+
+    // 토론 좋아요/싫어요 카운트 업데이트
+    private void updateDebateLikeHateCount(Debate debate, LikeHateType type, boolean increase) {
+        if (type == LikeHateType.LIKE) {
+            if (increase) {
+                debate.increaseLikeCnt();
+            } else {
+                debate.decreaseLikeCnt();
+            }
+        } else {
+            if (increase) {
+                debate.increaseHateCnt();
+            } else {
+                debate.decreaseHateCnt();
+            }
+        }
+    }
+
+    // Debate 엔티티를 Detail DTO로 변환
+    private DebateResponseDto.Detail convertToDetail(Debate debate) {
+        return DebateResponseDto.Detail.builder()
+                .debateId(debate.getId())
+                .content(debate.getContent())
+                .spoiler(debate.getSpoiler())
+                .likeCnt(debate.getLikeCnt())
+                .hateCnt(debate.getHateCnt())
+                .createdAt(debate.getCreatedAt())
+                .updatedAt(debate.getUpdatedAt())
+                .nickname(debate.getMember().getNickname())
+                .profileImage(debate.getMember().getProfileImage())
+                .popcorn(debate.getMember().getPopcorn())
+                .build();
+    }
+
+    // 특정 토론 조회
+    public DebateResponseDto.Detail getDebateById(Long debateId) {
+        Debate debate = debateRepository.findByIdAndIsDeletedFalse(debateId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.DEBATE_NOT_FOUND.getMessage()));
+
+        return convertToDetail(debate);
+    }
+
+    // 특정 사용자의 특정 영화에 대한 토론 목록 조회 (최신순)
+    public DebateResponseDto.PageResponse getDebatesByMemberAndMovieLatest(Long memberId, Long tmdbId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Debate> debatePage = debateRepository.findByMemberIdAndMovieTmdbIdAndIsDeletedFalseOrderByCreatedAtDesc(memberId, tmdbId, pageable);
+
+        Page<DebateResponseDto.Detail> detailPage = debatePage.map(this::convertToDetail);
+        return DebateResponseDto.PageResponse.from(detailPage);
+    }
+
+    // 특정 사용자의 특정 영화에 대한 토론 목록 조회 (인기순)
+    public DebateResponseDto.PageResponse getDebatesByMemberAndMoviePopularity(Long memberId, Long tmdbId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Debate> debatePage = debateRepository.findByMemberIdAndMovieTmdbIdAndIsDeletedFalseOrderByLikeCntDesc(memberId, tmdbId, pageable);
+
+        Page<DebateResponseDto.Detail> detailPage = debatePage.map(this::convertToDetail);
+        return DebateResponseDto.PageResponse.from(detailPage);
+    }
+
+    // 특정 사용자의 토론 목록 조회 (최신순)
+    public DebateResponseDto.PageResponse getDebatesByMemberLatest(Long memberId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Debate> debatePage = debateRepository.findByMemberIdAndIsDeletedFalseOrderByCreatedAtDesc(memberId, pageable);
+
+        Page<DebateResponseDto.Detail> detailPage = debatePage.map(this::convertToDetail);
+        return DebateResponseDto.PageResponse.from(detailPage);
+    }
+
+    // 특정 사용자의 토론 목록 조회 (인기순)
+    public DebateResponseDto.PageResponse getDebatesByMemberPopularity(Long memberId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Debate> debatePage = debateRepository.findByMemberIdAndIsDeletedFalseOrderByLikeCntDesc(memberId, pageable);
+
+        Page<DebateResponseDto.Detail> detailPage = debatePage.map(this::convertToDetail);
+        return DebateResponseDto.PageResponse.from(detailPage);
+    }
+
+    // 닉네임으로 토론 목록 조회 (인기순)
+    public DebateResponseDto.PageResponse getDebatesByNicknamePopularity(String nickname, int page, int size) {
+        // 닉네임으로 사용자 존재 확인
+        Member member = memberRepository.findByNickname(nickname)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Debate> debatePage = debateRepository.findByMemberNicknameAndIsDeletedFalseOrderByLikeCntDesc(nickname, pageable);
+
+        Page<DebateResponseDto.Detail> detailPage = debatePage.map(this::convertToDetail);
+        return DebateResponseDto.PageResponse.from(detailPage);
+    }
+
+
+}

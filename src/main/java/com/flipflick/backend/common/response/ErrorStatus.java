@@ -35,6 +35,12 @@ public enum ErrorStatus {
     FOLLOW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 팔로우 중입니다."),
     SELF_FOLLOW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "자신은 팔로우할 수 없습니다."),
     INCORRECT_USER_EXCEPTION(HttpStatus.BAD_REQUEST,"올바르지 않은 회원입니다."),
+    INVALID_STATUS(HttpStatus.BAD_REQUEST,"유효하지 않은 상태입니다."),
+    ALREADY_REPORT(HttpStatus.BAD_REQUEST,"이미 처리된 신고 입니다."),
+    INVALID_REPORT_ACTION(HttpStatus.BAD_REQUEST,"유효하지 않은 신고 처리 요청 입니다."),
+    DEBATE_UPDATE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 토론만 수정할 수 있습니다."),
+    DEBATE_DELETE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 토론만 삭제할 수 있습니다."),
+    DEBATE_SELF_LIKE_HATE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 토론에는 좋아요/싫어요를 할 수 없습니다."),
 
     /**
      * 401 UNAUTHORIZED
@@ -52,18 +58,22 @@ public enum ErrorStatus {
     /**
      * 403 FORBIDDEN
      */
+    MEMBER_BLOCKED(HttpStatus.FORBIDDEN, "차단된 회원입니다."),
+    MEMBER_SUSPENDED(HttpStatus.FORBIDDEN, "정지된 회원입니다."),
 
     /**
      * 404 NOT_FOUND
      */
     NOT_LOGIN_EXCEPTION(HttpStatus.NOT_FOUND,"로그인이 필요합니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
+    REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "신고를 찾을 수 없습니다."),
 
     // PlayList 관련 에러
     PLAYLIST_NOT_FOUND(HttpStatus.NOT_FOUND, "플레이리스트를 찾을 수 없습니다."),
     MOVIE_NOT_FOUND(HttpStatus.NOT_FOUND, "영화 정보를 찾을 수 없습니다."),
 
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다."),
+    DEBATE_NOT_FOUND(HttpStatus.NOT_FOUND, "토론을 찾을 수 없습니다."),
 
     // follow 관련 에러
     FOLLOW_NOT_FOUND(HttpStatus.NOT_FOUND, "팔로우 정보가 없습니다."),
