@@ -1,6 +1,7 @@
 package com.flipflick.backend.api.admin.service;
 
 import com.flipflick.backend.api.admin.dto.*;
+import com.flipflick.backend.api.debate.repository.DebateRepository;
 import com.flipflick.backend.api.member.dto.MemberListResponseDto;
 import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.repository.MemberRepository;
@@ -28,6 +29,7 @@ public class AdminService {
     private final MemberRepository memberRepository;
     private final ReviewRepository reviewRepository;
     private final ReportRepository reportRepository;
+    private final DebateRepository debateRepository;
 
     public DashboardStatResponseDto getDashboardStats() {
         Map<String, Map<String, List<TimeSeriesData>>> stats = new HashMap<>();
@@ -42,6 +44,12 @@ public class AdminService {
                 "7D", getReviewStats(7, 1),
                 "30D", getReviewStats(30, 5),
                 "90D", getReviewStats(90, 10)
+        ));
+
+        stats.put("debate", Map.of(
+                "7D", getDebateStats(7, 1),
+                "30D", getDebateStats(30, 5),
+                "90D", getDebateStats(90, 10)
         ));
 
 
@@ -60,9 +68,7 @@ public class AdminService {
 
         List<TimeSeriesData> result = new ArrayList<>();
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
-            boolean isIntervalDay = (days == 7) ||
-                    (days == 30 && date.getDayOfMonth() % 5 == startDate.getDayOfMonth() % 5) ||
-                    (days == 90 && date.getDayOfMonth() % 10 == startDate.getDayOfMonth() % 10);
+            boolean isIntervalDay = (days == 7) || (date.getDayOfMonth() % interval == startDate.getDayOfMonth() % interval);
 
 
             if (isIntervalDay || date.equals(endDate)) {
@@ -87,10 +93,32 @@ public class AdminService {
 
         List<TimeSeriesData> result = new ArrayList<>();
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
-            boolean isIntervalDay = (days == 7) ||
-                    (days == 30 && date.getDayOfMonth() % 5 == startDate.getDayOfMonth() % 5) ||
-                    (days == 90 && date.getDayOfMonth() % 10 == startDate.getDayOfMonth() % 10);
+            boolean isIntervalDay = (days == 7) || (date.getDayOfMonth() % interval == startDate.getDayOfMonth() % interval);
 
+
+            if (isIntervalDay || date.equals(endDate)) {
+                Long newCount = newDataMap.getOrDefault(date, 0L);
+                Long totalCount = cumulativeMap.getOrDefault(date, 0L);
+                result.add(new TimeSeriesData(date, newCount, totalCount));
+            }
+        }
+
+        return result;
+    }
+
+    private List<TimeSeriesData> getDebateStats(int days, int interval) {
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(days - 1);
+
+        List<Object[]> newDataRows = debateRepository.countNewDebatesByDate(startDate, endDate);
+        Map<LocalDate, Long> newDataMap = toMap(newDataRows);
+
+        List<Object[]> allDataRows = debateRepository.countDebatesUntilDate(endDate);
+        Map<LocalDate, Long> cumulativeMap = buildCumulativeMap(allDataRows, startDate, endDate);
+
+        List<TimeSeriesData> result = new ArrayList<>();
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            boolean isIntervalDay = (days == 7) || (date.getDayOfMonth() % interval == startDate.getDayOfMonth() % interval);
 
             if (isIntervalDay || date.equals(endDate)) {
                 Long newCount = newDataMap.getOrDefault(date, 0L);

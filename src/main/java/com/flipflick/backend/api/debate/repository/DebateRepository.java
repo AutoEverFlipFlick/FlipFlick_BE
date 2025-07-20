@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -64,4 +66,25 @@ public interface DebateRepository extends JpaRepository<Debate, Long> {
             "WHERE d.member.id = :memberId AND d.isDeleted = false " +
             "ORDER BY d.likeCnt DESC, d.createdAt DESC")
     Page<Debate> findByMemberIdAndIsDeletedFalseOrderByLikeCntDesc(@Param("memberId") Long memberId, Pageable pageable);
+
+    // 날짜별 전체 토론 수
+    @Query(value = """
+    SELECT CAST(d.created_at AS DATE) AS date, COUNT(*) AS count
+    FROM debate d
+    WHERE CAST(d.created_at AS DATE) <= :endDate AND d.is_deleted = false
+    GROUP BY CAST(d.created_at AS DATE)
+    ORDER BY CAST(d.created_at AS DATE)
+""", nativeQuery = true)
+    List<Object[]> countDebatesUntilDate(@Param("endDate") LocalDate endDate);
+
+    // 날짜별 신규 토론 수
+    @Query(value = """
+    SELECT CAST(d.created_at AS DATE) AS date, COUNT(*) AS count
+    FROM debate d
+    WHERE CAST(d.created_at AS DATE) BETWEEN :startDate AND :endDate AND d.is_deleted = false
+    GROUP BY CAST(d.created_at AS DATE)
+    ORDER BY CAST(d.created_at AS DATE)
+""", nativeQuery = true)
+    List<Object[]> countNewDebatesByDate(@Param("startDate") LocalDate startDate,
+                                         @Param("endDate") LocalDate endDate);
 }
