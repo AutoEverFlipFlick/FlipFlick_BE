@@ -1,0 +1,156 @@
+package com.flipflick.backend.api.debate.dto;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Page;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+public class DebateResponseDto {
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "토론 상세 정보")
+    public static class Detail {
+        @Schema(description = "토론 ID", example = "1")
+        private Long debateId;
+
+        @Schema(description = "토론 내용", example = "정말 재미있는 영화였습니다.")
+        private String content;
+        
+        @Schema(description = "스포일러 포함 여부", example = "false")
+        private Boolean spoiler;
+
+        @Schema(description = "좋아요 수", example = "15")
+        private Long likeCnt;
+
+        @Schema(description = "싫어요 수", example = "2")
+        private Long hateCnt;
+
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+        @Schema(description = "생성일시", example = "2024-01-15 14:30:00")
+        private LocalDateTime createdAt;
+
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+        @Schema(description = "수정일시", example = "2024-01-15 14:30:00")
+        private LocalDateTime updatedAt;
+
+        // 작성자 정보
+        @Schema(description = "작성자 닉네임", example = "영화매니아")
+        private String nickname;
+
+        @Schema(description = "작성자 프로필 이미지", example = "https://example.com/profile.jpg")
+        private String profileImage;
+
+        @Schema(description = "작성자 팝콘 지수", example = "85.5")
+        private Double popcorn;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "토론 목록 페이지네이션 응답")
+    public static class PageResponse {
+        @Schema(description = "토론 목록")
+        private List<Detail> content;
+
+        @Schema(description = "현재 페이지", example = "0")
+        private int currentPage;
+
+        @Schema(description = "전체 페이지 수", example = "10")
+        private int totalPages;
+
+        @Schema(description = "전체 요소 수", example = "95")
+        private long totalElements;
+
+        @Schema(description = "현재 페이지 요소 수", example = "10")
+        private int numberOfElements;
+
+        @Schema(description = "첫 페이지 여부", example = "true")
+        private boolean first;
+
+        @Schema(description = "마지막 페이지 여부", example = "false")
+        private boolean last;
+
+        public static PageResponse from(Page<Detail> page) {
+            return PageResponse.builder()
+                    .content(page.getContent())
+                    .currentPage(page.getNumber())
+                    .totalPages(page.getTotalPages())
+                    .totalElements(page.getTotalElements())
+                    .numberOfElements(page.getNumberOfElements())
+                    .first(page.isFirst())
+                    .last(page.isLast())
+                    .build();
+        }
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "토론 생성 응답")
+    public static class Create {
+        @Schema(description = "생성된 토론 ID", example = "1")
+        private Long debateId;
+
+        @Schema(description = "토론 내용", example = "정말 재미있는 영화였습니다.")
+        private String content;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "토론 수정 응답")
+    public static class Update {
+        @Schema(description = "수정된 토론 ID", example = "1")
+        private Long debateId;
+
+        @Schema(description = "수정된 토론 내용", example = "수정된 토론 내용입니다.")
+        private String content;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "토론 삭제 응답")
+    public static class Delete {
+        @Schema(description = "삭제된 토론 ID", example = "1")
+        private Long debateId;
+
+        @Schema(description = "삭제 메시지", example = "토론가 삭제되었습니다.")
+        private String message;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "토론 좋아요/싫어요 응답")
+    public static class LikeHate {
+        @Schema(description = "토론 ID", example = "1")
+        private Long debateId;
+
+        @Schema(description = "처리 타입", example = "LIKE")
+        private String type;
+
+        @Schema(description = "처리 결과", example = "좋아요가 추가되었습니다.")
+        private String message;
+
+        @Schema(description = "현재 좋아요 수", example = "16")
+        private Long likeCnt;
+
+        @Schema(description = "현재 싫어요 수", example = "2")
+        private Long hateCnt;
+    }
+}
