@@ -5,7 +5,9 @@ import com.flipflick.backend.api.alarm.entity.Alarm;
 import com.flipflick.backend.api.alarm.event.AlarmEvent;
 import com.flipflick.backend.api.alarm.service.AlarmService;
 import com.flipflick.backend.common.exception.BadRequestException;
+import com.flipflick.backend.common.response.ApiResponse;
 import com.flipflick.backend.common.response.ErrorStatus;
+import com.flipflick.backend.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -76,11 +78,11 @@ public class AlarmController {
         Alarm alarm = event.getAlarm();
         Long toUser = alarm.getReceivedId();
 
-        AlarmDTO dto = AlarmDTO.from(alarm); // ✅ DTO 변환
+        AlarmDTO dto = AlarmDTO.from(alarm);
 
         List<SseEmitter> userEmitters = emitters.get(toUser);
         if (userEmitters != null) {
-            userEmitters.forEach(em -> safeSend(em, dto)); // ✅ DTO를 안전하게 전송
+            userEmitters.forEach(em -> safeSend(em, dto));
         }
     }
 
@@ -88,16 +90,17 @@ public class AlarmController {
     // 과거 알람 전체 조회
     @Operation(summary = "알람 히스토리 조회", description = "사용자의 과거 알람을 최신순으로 조회합니다.")
     @GetMapping
-    public List<AlarmDTO> getHistory(@RequestParam Long userId) {
-        return alarmService.getAlarms(userId);
+    public ResponseEntity<ApiResponse<List<AlarmDTO>>> getHistory(@RequestParam Long userId) {
+        List<AlarmDTO> alarms = alarmService.getAlarms(userId);
+        return ApiResponse.success(SuccessStatus.SEND_ALARM_LIST_SUCCESS, alarms);
     }
 
     // 특정 알람 읽음 처리
     @Operation(summary = "알람 읽음 처리", description = "특정 알람을 읽음 처리 후 삭제합니다.")
     @PostMapping("/{alarmId}/read")
-    public ResponseEntity<Void> markRead(@PathVariable Long alarmId) {
+    public ResponseEntity<ApiResponse<Void>> markRead(@PathVariable Long alarmId) {
         alarmService.markRead(alarmId);
-        return ResponseEntity.ok().build();
+        return ApiResponse.success_only(SuccessStatus.ALARM_READ_SUCCESS);
     }
 
     // 안전하게 SSE 이벤트를 보내는 헬퍼

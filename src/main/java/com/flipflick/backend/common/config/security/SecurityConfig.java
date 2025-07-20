@@ -102,8 +102,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/follow/**").permitAll()
                         .requestMatchers("/api/v1/movie/bookmark-list", "/api/v1/movie/watched-list", "/api/v1/movie/like-list").permitAll() // 찜, 봤어요 리스트 인증 허가
                         .requestMatchers("/api/v1/alarms/**").permitAll()
+                        .requestMatchers("/api/v1/popcorn/my", "/api/v1/popcorn/user/*").permitAll()
+                        .requestMatchers("/api/v1/review/movie/**", "/api/v1/review/user/**").permitAll()
                         .anyRequest().authenticated()
                 );
+
 
         return http.build();
     }

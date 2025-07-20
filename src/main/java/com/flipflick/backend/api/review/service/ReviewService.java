@@ -265,6 +265,8 @@ public class ReviewService {
                 .nickname(review.getMember().getNickname())
                 .profileImage(review.getMember().getProfileImage())
                 .popcorn(review.getMember().getPopcorn())
+                .movieTitle(review.getMovie().getTitle())
+                .posterImg(review.getMovie().getPosterImg())
                 .build();
     }
 }
