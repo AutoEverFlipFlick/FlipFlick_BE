@@ -47,6 +47,7 @@ public class MovieService {
     private final MemberRepository memberRepository;
     private final WatchedRepository watchedRepository;
     private final MovieLikeHateRepository movieLikeHateRepository;
+    private final MoviePopcornScoreService moviePopcornScoreService;
 
     // 영화 상세 조회 메서드(DB에 영화데이터가 없으면 TMDB호출 및 저장후 반환)
     @Transactional
@@ -518,6 +519,32 @@ public class MovieService {
                 .isLast(pageLH.isLast())
                 .content(content)
                 .build();
+    }
+
+    /**
+     * Popcorn 점수 기준 TOP 영화 조회
+     */
+    @Transactional(readOnly = true)
+    public List<MovieBWLHResponseDTO> getTopMoviesByPopcornScore(int limit) {
+        PageRequest pageRequest = PageRequest.of(0, limit);
+        Page<Movie> topMovies = movieRepository.findTopMoviesByPopcornScore(pageRequest);
+
+        return topMovies.getContent().stream()
+                .map(movie -> new MovieBWLHResponseDTO(
+                        movie.getTmdbId(),
+                        movie.getPosterImg(),
+                        movie.getTitle(),
+                        movie.getReleaseDate().getYear()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 수동으로 Popcorn 점수 재계산 (관리자용)
+     */
+    @Transactional
+    public void manualRecalculatePopcornScores() {
+        moviePopcornScoreService.recalculateAllPopcornScores();
     }
 
 }

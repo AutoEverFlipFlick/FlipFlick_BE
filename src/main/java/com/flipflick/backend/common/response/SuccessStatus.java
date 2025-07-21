@@ -81,6 +81,7 @@ public enum SuccessStatus {
     SEND_RECOMMENDATION_SUCCESS(HttpStatus.OK,"유사한 성향 리뷰 조회 성공"),
     LOGOUT_SUCCESS(HttpStatus.OK,"로그아웃 성공"),
     GET_REVIEW_SUCCESS(HttpStatus.OK,"내 리뷰 조회 성공"),
+    GET_MOVIE_SUCCESS(HttpStatus.OK, "Top10 영화 조회 성공"),
     REPORT_CREATE_SUCCESS(HttpStatus.OK,"신고 등록 성공"),
     REPORT_DELETE_SUCCESS(HttpStatus.OK,"신고 삭제 성공")
     /**
