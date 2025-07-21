@@ -41,7 +41,7 @@ public class SwaggerConfig {
 
         Server server = new Server();
         //server.setUrl("https://www.tarbonicar.kro.kr:81");
-        server.setUrl("http://localhost:8080");
+        server.setUrl("https://api.flipflick.life");
 
         return new OpenAPI()
                 .info(new Info()
