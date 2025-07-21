@@ -55,6 +55,12 @@ public class ReviewResponseDto {
 
         @Schema(description = "작성자 팝콘 지수", example = "85.5")
         private Double popcorn;
+
+        @Schema(description = "영화 제목")
+        private String movieTitle;
+
+        @Schema(description = "포스터 이미지")
+        private String posterImg;
     }
 
     @Getter

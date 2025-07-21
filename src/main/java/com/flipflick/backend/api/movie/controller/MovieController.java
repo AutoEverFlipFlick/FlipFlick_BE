@@ -83,7 +83,7 @@ public class MovieController {
         Long userId = (memberId != null) ? memberId : securityMember.getId();
 
         MovieBWLHListResponseDTO movieBWLHListResponseDTO = movieService.getMovieWatched(userId, page, size);
-        return ApiResponse.success(SuccessStatus.SEND_MOVIE_BOOKMARK_LIST_SUCCESS, movieBWLHListResponseDTO);
+        return ApiResponse.success(SuccessStatus.SEND_MOVIE_WATCHED_LIST_SUCCESS, movieBWLHListResponseDTO);
     }
 
     @Operation(summary = "좋아요, 싫어요 토글 API", description = "좋아요, 싫어요 토글 합니다. TYPE : LIKE / HATE")
