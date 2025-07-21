@@ -22,6 +22,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -216,6 +218,18 @@ public class ReviewService {
         return ReviewResponseDto.PageResponse.from(detailPage);
     }
 
+    // 11. 내 리뷰 조회 (존재 여부 포함)
+    public ReviewResponseDto.MyReview getMyReviewWithStatus(Long memberId, Long tmdbId) {
+        Optional<Review> reviewOpt = reviewRepository.findByMemberIdAndMovieTmdbIdAndIsDeletedFalse(memberId, tmdbId);
+
+        if (reviewOpt.isPresent()) {
+            ReviewResponseDto.Detail detail = convertToDetail(reviewOpt.get());
+            return ReviewResponseDto.MyReview.of(true, detail);
+        } else {
+            return ReviewResponseDto.MyReview.of(false, null);
+        }
+    }
+
     // 별점 유효성 체크 (0.5 단위)
     private boolean isValidStarRating(Double star) {
         if (star < 1.0 || star > 5.0) {
@@ -251,10 +265,13 @@ public class ReviewService {
         }
     }
 
+
+
     // Review 엔티티를 Detail DTO로 변환
     private ReviewResponseDto.Detail convertToDetail(Review review) {
         return ReviewResponseDto.Detail.builder()
                 .reviewId(review.getId())
+                .memberId(review.getMember().getId())
                 .content(review.getContent())
                 .star(review.getStar())
                 .spoiler(review.getSpoiler())

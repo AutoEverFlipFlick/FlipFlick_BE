@@ -141,6 +141,7 @@ public class RecommendationService {
     private ReviewResponseDto.Detail convertToDetail(Review review) {
         return ReviewResponseDto.Detail.builder()
                 .reviewId(review.getId())
+                .memberId(review.getMember().getId())
                 .content(review.getContent())
                 .star(review.getStar())
                 .spoiler(review.getSpoiler())

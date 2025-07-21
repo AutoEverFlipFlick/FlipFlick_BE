@@ -23,6 +23,9 @@ public class ReviewResponseDto {
         @Schema(description = "리뷰 ID", example = "1")
         private Long reviewId;
 
+        @Schema(description = "작성자 ID")
+        private Long memberId;
+
         @Schema(description = "리뷰 내용", example = "정말 재미있는 영화였습니다.")
         private String content;
 
@@ -182,5 +185,28 @@ public class ReviewResponseDto {
 
         @Schema(description = "현재 싫어요 수", example = "2")
         private Long hateCnt;
+    }
+
+    // ...existing code...
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "내 리뷰 조회 응답")
+    public static class MyReview {
+
+        @Schema(description = "리뷰 존재 여부", example = "true")
+        private Boolean hasReview;
+
+        @Schema(description = "리뷰 상세 정보 (없으면 null)")
+        private Detail review;
+
+        public static MyReview of(boolean hasReview, Detail review) {
+            return MyReview.builder()
+                    .hasReview(hasReview)
+                    .review(review)
+                    .build();
+        }
     }
 }

@@ -35,6 +35,8 @@ public class Report {
     private String targetTitle; // 신고된 글 제목
     private String targetContent; // 신고된 글 내용
 
+    private Long targetEntityId; // 해당되는 신고의 entityId
+
 
 
     @Column(name = "handled")
