@@ -177,5 +177,9 @@ public class Member extends BaseTimeEntity {
         this.blockDate = null;
     }
 
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
+
 }
 

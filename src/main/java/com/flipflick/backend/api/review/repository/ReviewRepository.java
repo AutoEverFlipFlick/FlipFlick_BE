@@ -2,6 +2,7 @@ package com.flipflick.backend.api.review.repository;
 
 import com.flipflick.backend.api.admin.dto.MovieReviewCountResponseDto;
 import com.flipflick.backend.api.member.entity.Member;
+import com.flipflick.backend.api.recommendation.dto.RecommendationDataDto;
 import com.flipflick.backend.api.review.entity.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -80,4 +81,42 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     int countByMember(Member member);
 
+    // Python 서버용 추천 데이터 추출
+    @Query(value = """
+    SELECT 
+        r.member_id,
+        r.movie_id,
+        r.star,
+        GROUP_CONCAT(g.genre_name ORDER BY g.genre_name SEPARATOR ',') as genres,
+        m.tmdb_id,
+        m.title
+    FROM review r 
+    JOIN movie m ON r.movie_id = m.id
+    JOIN movie_genre mg ON mg.movie_id = m.id
+    JOIN genre g ON g.id = mg.genre_id
+    WHERE r.is_deleted = false
+      AND EXISTS (
+          SELECT 1 FROM movie_watched w 
+          WHERE w.member_id = r.member_id 
+            AND w.movie_id = r.movie_id
+      )
+    GROUP BY r.member_id, r.movie_id, r.star, m.tmdb_id, m.title
+    ORDER BY r.member_id, r.movie_id
+    """, nativeQuery = true)
+    List<Object[]> findRecommendationDataNative();
+
+    // 유사 사용자들의 고평점 리뷰 조회
+    @Query("""
+    SELECT r FROM Review r 
+    WHERE r.member.id IN :similarUserIds 
+    AND r.member.id != :excludeMemberId
+    AND r.star >= :minRating
+    AND r.isDeleted = false
+    ORDER BY r.star DESC, r.likeCnt DESC
+    """)
+    Page<Review> findHighRatedReviewsBySimilarUsers(
+            @Param("similarUserIds") List<Long> similarUserIds,
+            @Param("excludeMemberId") Long excludeMemberId,
+            @Param("minRating") Double minRating,
+            Pageable pageable);
 }
