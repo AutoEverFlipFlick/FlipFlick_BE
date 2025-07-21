@@ -73,4 +73,5 @@ public class Movie extends BaseTimeEntity {
     public void decrementLike() { if(this.likeCnt>0) this.likeCnt--; }
     public void incrementHate() { this.hateCnt++; }
     public void decrementHate() { if(this.hateCnt>0) this.hateCnt--; }
+    public void updatePopcornScore(double newScore) { this.popcorn = newScore; }
 }
