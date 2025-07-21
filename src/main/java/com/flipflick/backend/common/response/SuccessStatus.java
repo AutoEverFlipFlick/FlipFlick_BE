@@ -74,6 +74,8 @@ public enum SuccessStatus {
     SEND_DEBATE_COMMENT_CREATE_SUCCESS(HttpStatus.OK, "댓글 작성 성공"),
     SEND_DEBATE_COMMENT_UPDATE_SUCCESS(HttpStatus.OK, "댓글 수정 성공"),
     SEND_DEBATE_COMMENT_DELETE_SUCCESS(HttpStatus.OK, "댓글 삭제 성공"),
+    PASSWORD_RESET_LINK_SENT(HttpStatus.OK, "비밀번호 재설정 링크가 이메일로 전송되었습니다."),
+    PASSWORD_RESET_SUCCESS(HttpStatus.OK, "비밀번호가 성공적으로 재설정되었습니다.");
 
     /**
      * 201

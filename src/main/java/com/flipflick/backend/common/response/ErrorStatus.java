@@ -43,6 +43,9 @@ public enum ErrorStatus {
     DEBATE_SELF_LIKE_HATE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 토론에는 좋아요/싫어요를 할 수 없습니다."),
     DEBATE_COMMENT_UPDATE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 댓글만 수정할 수 있습니다."),
     DEBATE_COMMENT_DELETE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 댓글만 삭제할 수 있습니다."),
+    PASSWORD_RESET_INVALID_CODE(HttpStatus.BAD_REQUEST, "비밀번호 재설정 코드가 유효하지 않습니다."),
+    PASSWORD_RESET_EXPIRED_CODE(HttpStatus.BAD_REQUEST, "비밀번호 재설정 코드가 만료되었습니다."),
+    PASSWORD_RESET_ALREADY_USED(HttpStatus.BAD_REQUEST, "이미 사용된 비밀번호 재설정 코드입니다."),
 
     /**
      * 401 UNAUTHORIZED
@@ -69,6 +72,7 @@ public enum ErrorStatus {
     NOT_LOGIN_EXCEPTION(HttpStatus.NOT_FOUND,"로그인이 필요합니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "신고를 찾을 수 없습니다."),
+    EMAIL_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
 
     // PlayList 관련 에러
     PLAYLIST_NOT_FOUND(HttpStatus.NOT_FOUND, "플레이리스트를 찾을 수 없습니다."),

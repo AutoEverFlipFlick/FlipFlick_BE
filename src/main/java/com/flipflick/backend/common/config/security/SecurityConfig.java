@@ -53,7 +53,8 @@ public class SecurityConfig {
         corsConfiguration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "http://localhost:5173",
-                "http://localhost:8080"
+                "http://localhost:8080",
+                "https://www.flipflick.life"
         ));
         corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
         corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
@@ -102,6 +103,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/s3/image").permitAll()
                         .requestMatchers("/api/v1/follow/**").permitAll()
                         .requestMatchers("/api/v1/movie/bookmark-list", "/api/v1/movie/watched-list").permitAll() // 찜, 봤어요 리스트 인증 허가
+                        .requestMatchers("/api/v1/password-reset/**").permitAll() // 비밀번호 재설정 인증 허가
                         .anyRequest().authenticated()
                 );
 
