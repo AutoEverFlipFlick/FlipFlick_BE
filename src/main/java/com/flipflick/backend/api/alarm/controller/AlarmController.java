@@ -55,7 +55,7 @@ public class AlarmController {
 
         // 구독 직후 아직 읽지 않은 알람을 전송
         List<AlarmDTO> unread = alarmService.getAlarms(userId).stream()
-                .filter(a -> !a.getIsRead())
+                .filter(a -> a.getIsRead() == null || !a.getIsRead())
                 .toList();
 
         unread.forEach(a -> safeSend(emitter, a));
@@ -103,7 +103,8 @@ public class AlarmController {
     private void safeSend(SseEmitter emitter, AlarmDTO alarm) {
         try {
             emitter.send(SseEmitter.event().name("alarm").data(alarm));
-        } catch (IOException e) {
+        } catch (IllegalStateException | IOException e) {
+            // emitter가 이미 닫혔거나 에러가 난 경우 안전하게 emitter를 제거
             emitters.forEach((userId, emitterList) -> emitterList.remove(emitter));
         }
     }

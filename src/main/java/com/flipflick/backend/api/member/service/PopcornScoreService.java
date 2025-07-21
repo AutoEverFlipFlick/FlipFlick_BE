@@ -1,5 +1,6 @@
 package com.flipflick.backend.api.member.service;
 
+import com.flipflick.backend.api.alarm.service.AlarmService;
 import com.flipflick.backend.api.follow.repository.FollowRepository;
 import com.flipflick.backend.api.member.dto.PopcornScoreInfo;
 import com.flipflick.backend.api.member.entity.DailyExpLog;
@@ -8,6 +9,7 @@ import com.flipflick.backend.api.member.repository.DailyExpLogRepository;
 import com.flipflick.backend.api.member.repository.MemberRepository;
 import com.flipflick.backend.api.review.repository.ReviewLikeHateRepository;
 import com.flipflick.backend.api.review.repository.ReviewRepository;
+import com.flipflick.backend.common.response.AlarmMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -28,7 +31,7 @@ public class PopcornScoreService {
     private final DailyExpLogRepository dailyExpLogRepository;
     private final FollowRepository followRepository;
     private final ReviewLikeHateRepository reviewLikeHateRepository;
-    private final ReviewRepository reviewRepository;
+    private final AlarmService alarmService;
 
     //매일 자정에 실행
     @Scheduled(cron = "0 0 0 * * *")
@@ -46,6 +49,8 @@ public class PopcornScoreService {
 
         for (Member member : allMembers) {
             try {
+                // 기존 등급 저장
+                String previousGrade = member.getPopcornGrade(member.getPopcorn());
                 // 수정: 지난 7일간 미처리된 날짜들을 모두 처리
                 for (LocalDate date = sevenDaysAgo; !date.isAfter(yesterday); date = date.plusDays(1)) {
                     DailyExpLog dailyLog = calculateMemberDailyExp(member, date);
@@ -66,6 +71,8 @@ public class PopcornScoreService {
 
                 processedCount++;
 
+                String newGrade = member.getPopcornGrade(member.getPopcorn());
+                checkAndCreateGradeUpgradeAlarm(member.getId(), previousGrade, newGrade);
             } catch (Exception e) {
                 log.error("사용자 {} 팝콘지수 계산 실패: {}", member.getNickname(), e.getMessage());
             }
@@ -134,6 +141,37 @@ public class PopcornScoreService {
         return null;
     }
 
+    //등급 상승 확인 및 알림 생성
+    private void checkAndCreateGradeUpgradeAlarm(Long memberId, String previousGrade, String newGrade) {
+        if (!previousGrade.equals(newGrade) && isGradeUpgrade(previousGrade, newGrade)) {
+            try {
+                String message = String.format("팝콘지수 등급이 %s에서 %s로 올랐습니다! 🍿", previousGrade, newGrade);
+                alarmService.createAlarm(memberId, message);
+
+                log.info("사용자 {} 등급 상승 알림 생성: {} → {}", memberId, previousGrade, newGrade);
+            } catch (Exception e) {
+                log.error("사용자 {} 등급 상승 알림 생성 실패: {}", memberId, e.getMessage());
+            }
+        }
+    }
+
+
+    //등급이 상승했는지 확인하는 메서드
+    private boolean isGradeUpgrade(String previousGrade, String newGrade) {
+        Map<String, Integer> gradeOrder = Map.of(
+                "옥수수 1", 1,
+                "옥수수 2", 2,
+                "옥수수 3", 3,
+                "빈 팝콘", 4,
+                "1/3 팝콘", 5,
+                "2/3 팝콘", 6,
+                "1 팝콘", 7,
+                "팝콘기계", 8
+        );
+
+        return gradeOrder.getOrDefault(newGrade, 0) > gradeOrder.getOrDefault(previousGrade, 0);
+    }
+
     // 팝콘지수 등급 계산
     public String getPopcornGrade(Double popcornScore) {
         if (popcornScore >= 81) return "팝콘기계";
@@ -153,16 +191,12 @@ public class PopcornScoreService {
 
         String grade = getPopcornGrade(member.getPopcorn());
 
-        // 최근 7일간 로그 조회
-        LocalDate sevenDaysAgo = LocalDate.now().minusDays(7);
-        List<DailyExpLog> recentLogs = dailyExpLogRepository.findRecentLogsByMemberId(memberId, sevenDaysAgo);
 
         return PopcornScoreInfo.builder()
                 .popcornScore(member.getPopcorn())
                 .totalExp(member.getTotalExp())
                 .grade(grade)
                 .blockCount(member.getBlockCount())
-                .recentLogs(recentLogs)
                 .build();
     }
 
@@ -171,6 +205,9 @@ public class PopcornScoreService {
     public void recalculatePopcornScore(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        //기존 등급
+        String previousGrade = member.getPopcornGrade(member.getPopcorn());
 
         // 모든 일일 로그의 경험치 합산
         List<DailyExpLog> allLogs = dailyExpLogRepository.findRecentLogsByMemberId(memberId, LocalDate.now().minusDays(365));
@@ -181,6 +218,10 @@ public class PopcornScoreService {
 
         member.updateTotalExp(totalExp - member.getTotalExp()); // 차이만큼 업데이트
         memberRepository.save(member);
+
+        //추가: 등급 변화 확인 및 알림
+        String newGrade = member.getPopcornGrade(member.getPopcorn());
+        checkAndCreateGradeUpgradeAlarm(memberId, previousGrade, newGrade);
 
         log.info("사용자 {} 팝콘지수 재계산 완료: {}", member.getNickname(), member.getPopcorn());
     }

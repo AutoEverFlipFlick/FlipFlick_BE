@@ -1,5 +1,6 @@
 package com.flipflick.backend.api.review.service;
 
+import com.flipflick.backend.api.alarm.service.AlarmService;
 import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.repository.MemberRepository;
 import com.flipflick.backend.api.movie.entity.Movie;
@@ -34,6 +35,7 @@ public class ReviewService {
     private final ReviewLikeHateRepository reviewLikeHateRepository;
     private final MemberRepository memberRepository;
     private final MovieRepository movieRepository;
+    private final AlarmService alarmService;
 
     // 1. 리뷰 작성
     @Transactional
@@ -66,6 +68,12 @@ public class ReviewService {
 
         // 영화 평점 업데이트
         updateMovieVoteAverage(movie.getTmdbId());
+
+        try {
+            alarmService.createReviewWriteAlarmForFollowers(memberId, movie.getTitle());
+        } catch (Exception e) {
+            log.error("리뷰 작성 알림 전송 실패 - 사용자: {}, 영화: {}", member.getNickname(), movie.getTitle(), e);
+        }
 
         return ReviewResponseDto.Create.builder()
                 .reviewId(review.getId())
@@ -182,6 +190,9 @@ public class ReviewService {
 
                 updateReviewLikeHateCount(review, type, true); // 새로운 것 증가
                 message = type == LikeHateType.LIKE ? "좋아요로 변경되었습니다." : "싫어요로 변경되었습니다.";
+                if(type==LikeHateType.LIKE){
+                    alarmService.createAlarm(review.getMember().getId(),"내가 쓴 리뷰에 좋아요가 달렸습니다.");
+                }
             }
         } else {
             // 새로 추가
@@ -194,6 +205,9 @@ public class ReviewService {
 
             updateReviewLikeHateCount(review, type, true);
             message = type == LikeHateType.LIKE ? "좋아요가 추가되었습니다." : "싫어요가 추가되었습니다.";
+            if(type==LikeHateType.LIKE){
+                alarmService.createAlarm(review.getMember().getId(),"내가 쓴 리뷰에 좋아요가 달렸습니다.");
+            }
         }
 
         return ReviewResponseDto.LikeHate.builder()
