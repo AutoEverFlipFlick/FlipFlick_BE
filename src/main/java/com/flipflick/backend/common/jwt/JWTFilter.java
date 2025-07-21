@@ -4,6 +4,7 @@ import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.repository.MemberRepository;
 import com.flipflick.backend.common.config.security.SecurityMember;
 import com.flipflick.backend.common.exception.BadRequestException;
+import com.flipflick.backend.common.exception.BaseException;
 import com.flipflick.backend.common.response.ErrorStatus;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -20,6 +21,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class JWTFilter extends OncePerRequestFilter {
@@ -78,6 +80,20 @@ public class JWTFilter extends OncePerRequestFilter {
 
         Member member = memberRepository.findById(jwtUtil.getId(accessToken))
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage()));
+
+        if (member.getBlock() == 2) {
+            throw new BaseException(ErrorStatus.MEMBER_BLOCKED.getHttpStatus(),ErrorStatus.MEMBER_BLOCKED.getMessage());
+        }
+
+        if (member.getBlock() == 1) {
+            if (member.getBlockDate().plusDays(7).isBefore(LocalDateTime.now())) {
+                // 7일 지났으면 해제
+                member.unblock();
+            } else {
+                // 아직 7일 안 지났으면 예외
+                throw new BaseException(ErrorStatus.MEMBER_SUSPENDED.getHttpStatus(), ErrorStatus.MEMBER_SUSPENDED.getMessage());
+            }
+        }
 
 
         SecurityMember securityMember = SecurityMember.builder()

@@ -124,8 +124,8 @@ public class MemberController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "카카오톡 로그인 성공")
     })
     @PostMapping("/kakao")
-    public ResponseEntity<ApiResponse<LoginResponseDto>> kakaoLogin(@RequestBody KakaoCodeRequestDto requestDto,HttpServletResponse response) {
-        LoginResponseDto loginResponse = kakaoAuthService.kakaoLogin(requestDto.getCode());
+    public ResponseEntity<ApiResponse<OauthLoginResponseDto>> kakaoLogin(@RequestBody KakaoCodeRequestDto requestDto,HttpServletResponse response) {
+        OauthLoginResponseDto loginResponse = kakaoAuthService.kakaoLogin(requestDto.getCode());
 
         Cookie cookie = new Cookie("refresh", loginResponse.getRefreshToken());
         cookie.setHttpOnly(true);
@@ -142,8 +142,8 @@ public class MemberController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "네이버 로그인 성공")
     })
     @PostMapping("/naver")
-    public ResponseEntity<ApiResponse<LoginResponseDto>> naverLogin(@RequestBody NaverCodeRequestDto dto, HttpServletResponse response) {
-        LoginResponseDto loginResponse = naverAuthService.naverLogin(dto.getCode(), dto.getState());
+    public ResponseEntity<ApiResponse<OauthLoginResponseDto>> naverLogin(@RequestBody NaverCodeRequestDto dto, HttpServletResponse response) {
+        OauthLoginResponseDto loginResponse = naverAuthService.naverLogin(dto.getCode(), dto.getState());
 
         Cookie cookie = new Cookie("refresh", loginResponse.getRefreshToken());
         cookie.setHttpOnly(true);
@@ -181,7 +181,6 @@ public class MemberController {
 
         return ApiResponse.success(SuccessStatus.REISSUE_SUCCESS, dto);
     }
-
     @Operation(summary = "이메일 중복 검사", description = "입력한 이메일이 중복되는지 확인합니다.")
     @GetMapping("/check/email")
     public ResponseEntity<ApiResponse<Boolean>> checkEmailDuplicate(@RequestParam String email) {
@@ -194,6 +193,16 @@ public class MemberController {
     public ResponseEntity<ApiResponse<Boolean>> checkNicknameDuplicate(@RequestParam String nickname) {
         boolean isDuplicate = memberService.isNicknameDuplicate(nickname);
         return ApiResponse.success(SuccessStatus.CHECK_NICKNAME_DUPLICATE, isDuplicate);
+    }
+
+    @Operation(summary = "소셜 로그인 추가 정보 입력 API", description = "소셜 로그인 후 닉네임 및 프로필 이미지를 설정합니다.")
+    @PatchMapping("/social-info")
+    public ResponseEntity<ApiResponse<Void>> updateSocialInfo(
+            @Valid @RequestBody SocialInfoRequestDto requestDto,
+            @AuthenticationPrincipal SecurityMember securityMember
+    ) {
+        memberService.updateSocialInfo(securityMember.getId(), requestDto);
+        return ApiResponse.success_only(SuccessStatus.UPDATE_SOCIAL_INFO_SUCCESS);
     }
 
 

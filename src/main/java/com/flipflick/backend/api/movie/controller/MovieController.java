@@ -1,8 +1,8 @@
 package com.flipflick.backend.api.movie.controller;
 
-import com.flipflick.backend.api.movie.dto.MovieDetailResponseDTO;
-import com.flipflick.backend.api.movie.dto.SearchRequestIdDTO;
+import com.flipflick.backend.api.movie.dto.*;
 import com.flipflick.backend.api.movie.service.MovieService;
+import com.flipflick.backend.common.config.security.SecurityMember;
 import com.flipflick.backend.common.response.ApiResponse;
 import com.flipflick.backend.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,10 +10,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,10 +26,86 @@ public class MovieController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "영화 상세 정보 조회 성공")
     })
     @PostMapping("/view")
-    public ResponseEntity<ApiResponse<MovieDetailResponseDTO>> viewMovieDetail(@RequestBody SearchRequestIdDTO searchRequestIdDTO) throws Exception {
+    public ResponseEntity<ApiResponse<MovieDetailResponseDTO>> viewMovieDetail(@RequestBody SearchRequestIdDTO searchRequestIdDTO, @AuthenticationPrincipal SecurityMember securityMember) throws Exception {
 
-        MovieDetailResponseDTO movieDetailResponseDTO = movieService.viewMovieDetail(searchRequestIdDTO);
+        Long memberId = securityMember != null ? securityMember.getId() : null;
+
+        MovieDetailResponseDTO movieDetailResponseDTO = movieService.viewMovieDetail(searchRequestIdDTO, memberId);
         return ApiResponse.success(SuccessStatus.SEND_MOVIE_DETAIL_SUCCESS, movieDetailResponseDTO);
     }
 
+    @Operation(summary = "영화 찜 API", description = "원하는 영화를 찜할 수 있습니다, 다시 한번 더 호출하면 찜 해제 됩니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "영화 찜 토글 성공")
+    })
+    @PostMapping("/bookmark")
+    public ResponseEntity<ApiResponse<Void>> movieBookmark(@RequestBody MovieBWLHRequestDTO movieBWLHRequestDTO, @AuthenticationPrincipal SecurityMember securityMember) {
+
+        movieService.movieBookmark(movieBWLHRequestDTO, securityMember.getId());
+        return ApiResponse.success_only(SuccessStatus.SEND_MOVIE_BOOKMARK_SUCCESS);
+    }
+
+    @Operation(summary = "찜한 영화 목록 조회", description = "쿼리 파라미터 memberId가 있으면 해당 회원의 찜 목록, 없으면 본인의 찜 목록을 페이징 조회합니다.")
+    @GetMapping("/bookmark-list")
+    public ResponseEntity<ApiResponse<MovieBWLHListResponseDTO>> getMyBookmarks(
+            @AuthenticationPrincipal SecurityMember securityMember,
+            @RequestParam(value = "memberId", required = false) Long memberId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        // memberId 파라미터가 없으면, 인증된 본인의 ID 사용
+        Long userId = (memberId != null) ? memberId : securityMember.getId();
+
+        MovieBWLHListResponseDTO movieBWLHListResponseDTO = movieService.getBookmarkedMovies(userId, page, size);
+        return ApiResponse.success(SuccessStatus.SEND_MOVIE_BOOKMARK_LIST_SUCCESS, movieBWLHListResponseDTO);
+    }
+
+    @Operation(summary = "영화 봤어요 토글 API", description = "봤던 영화를 기록할 수 있습니다, 다시 한번 더 호출하면 해제 됩니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "본 영화 토글 성공")
+    })
+    @PostMapping("/watched")
+    public ResponseEntity<ApiResponse<Void>> movieWatched(@RequestBody MovieBWLHRequestDTO movieBWLHRequestDTO, @AuthenticationPrincipal SecurityMember securityMember) {
+
+        movieService.movieWatched(movieBWLHRequestDTO, securityMember.getId());
+        return ApiResponse.success_only(SuccessStatus.SEND_MOVIE_WATCHED_SUCCESS);
+    }
+
+    @Operation(summary = "본 영화 목록 조회 API", description = "쿼리 파라미터 memberId가 있으면 해당 회원의 본 영화 목록, 없으면 본인의 본 영화 목록을 페이징 조회합니다.")
+    @GetMapping("/watched-list")
+    public ResponseEntity<ApiResponse<MovieBWLHListResponseDTO>> getMovieWatched(
+            @AuthenticationPrincipal SecurityMember securityMember,
+            @RequestParam(value = "memberId", required = false) Long memberId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        // memberId 파라미터가 없으면, 인증된 본인의 ID 사용
+        Long userId = (memberId != null) ? memberId : securityMember.getId();
+
+        MovieBWLHListResponseDTO movieBWLHListResponseDTO = movieService.getMovieWatched(userId, page, size);
+        return ApiResponse.success(SuccessStatus.SEND_MOVIE_BOOKMARK_LIST_SUCCESS, movieBWLHListResponseDTO);
+    }
+
+    @Operation(summary = "좋아요, 싫어요 토글 API", description = "좋아요, 싫어요 토글 합니다. TYPE : LIKE / HATE")
+    @PostMapping("/like-hate")
+    public ResponseEntity<ApiResponse<Void>> movieLikeHate(@RequestBody MovieLikeHateRequestDTO movieLikeHateRequestDTO, @AuthenticationPrincipal SecurityMember securityMember){
+
+        movieService.movieLikeHate(securityMember.getId(), movieLikeHateRequestDTO);
+        return ApiResponse.success_only(SuccessStatus.SEND_MOVIE_LIKE_HATE_SUCCESS);
+    }
+
+    @Operation(summary = "좋아요 한 영화 목록 조회 API", description = "쿼리 파라미터 memberId가 있으면 해당 회원의 본 영화 목록, 없으면 본인의 본 영화 목록을 페이징 조회합니다.")
+    @GetMapping("/like-list")
+    public ResponseEntity<ApiResponse<MovieBWLHListResponseDTO>> getMovieLike(
+            @AuthenticationPrincipal SecurityMember securityMember,
+            @RequestParam(value = "memberId", required = false) Long memberId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        // memberId 파라미터가 없으면, 인증된 본인의 ID 사용
+        Long userId = (memberId != null) ? memberId : securityMember.getId();
+
+        MovieBWLHListResponseDTO movieBWLHListResponseDTO = movieService.getMovieLike(userId, page, size);
+        return ApiResponse.success(SuccessStatus.SEND_MOVIE_LIKE_LIST_SUCCESS, movieBWLHListResponseDTO);
+    }
 }
