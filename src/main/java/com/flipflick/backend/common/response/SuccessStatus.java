@@ -79,7 +79,8 @@ public enum SuccessStatus {
     ALARM_READ_SUCCESS(HttpStatus.OK, "알람 읽음 처리 성공"),
     SEND_ALARM_LIST_SUCCESS(HttpStatus.OK, "알람 히스토리 목록 반환 성공"),
     SEND_RECOMMENDATION_SUCCESS(HttpStatus.OK,"유사한 성향 리뷰 조회 성공"),
-    LOGOUT_SUCCESS(HttpStatus.OK,"로그아웃 성공");
+    LOGOUT_SUCCESS(HttpStatus.OK,"로그아웃 성공"),
+    GET_REVIEW_SUCCESS(HttpStatus.OK,"내 리뷰 조회 성공");
 
     private final HttpStatus httpStatus;
     private final String message;
