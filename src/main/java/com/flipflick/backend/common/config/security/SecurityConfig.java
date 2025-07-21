@@ -105,6 +105,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/alarms/**").permitAll()
                         .requestMatchers("/api/v1/popcorn/my", "/api/v1/popcorn/user/*").permitAll()
                         .requestMatchers("/api/v1/review/movie/**", "/api/v1/review/user/**").permitAll()
+                        .requestMatchers("/api/v1/debate/user/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

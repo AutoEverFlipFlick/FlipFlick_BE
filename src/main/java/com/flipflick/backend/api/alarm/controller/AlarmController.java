@@ -53,10 +53,6 @@ public class AlarmController {
 //                .computeIfAbsent(userId, id -> new CopyOnWriteArrayList<>())
 //                .add(emitter); // 여러 emitter 허용
 
-        emitter.onError((ex) -> {
-            emitters.get(userId).remove(emitter);
-        });
-
         // 구독 직후 아직 읽지 않은 알람을 전송
         List<AlarmDTO> unread = alarmService.getAlarms(userId).stream()
                 .filter(a -> !a.getIsRead())
