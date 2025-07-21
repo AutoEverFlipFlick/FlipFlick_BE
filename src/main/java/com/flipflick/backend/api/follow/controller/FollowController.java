@@ -1,8 +1,10 @@
 package com.flipflick.backend.api.follow.controller;
 
+import com.flipflick.backend.api.alarm.service.AlarmService;
 import com.flipflick.backend.api.follow.service.FollowService;
 import com.flipflick.backend.api.member.dto.MemberResponseDto;
 import com.flipflick.backend.api.member.entity.Member;
+import com.flipflick.backend.api.member.service.MemberService;
 import com.flipflick.backend.common.config.security.SecurityMember;
 import com.flipflick.backend.common.response.ApiResponse;
 import com.flipflick.backend.common.response.SuccessStatus;
@@ -24,6 +26,8 @@ import java.util.Map;
 public class FollowController {
 
     private final FollowService followService;
+    private final AlarmService alarmService;
+    private final MemberService memberService;
 
     // 팔로우
     @Operation(summary = "팔로우 API", description = "팔로우합니다.")
@@ -32,7 +36,18 @@ public class FollowController {
             @AuthenticationPrincipal SecurityMember securityMember,
             @PathVariable Long followedId
     ) {
+        // 1) 팔로우 처리
         followService.follow(securityMember.getEmail(), followedId);
+
+        // 2) 팔로워의 닉네임 조회
+        //    principal.getId() 는 SecurityMember 에서 꺼낸 유저 고유 ID
+        MemberResponseDto me = memberService.getMemberById(securityMember.getId());
+        String followerNick = me.getNickname();
+
+        // 3) 알람 생성
+        String content = followerNick + "님이 회원님을 팔로우했습니다.";
+        alarmService.createAlarm(followedId, content);
+
         return ApiResponse.success_only(SuccessStatus.SEND_FOLLOW_SUCCESS);
     }
 
