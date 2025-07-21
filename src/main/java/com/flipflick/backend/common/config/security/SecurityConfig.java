@@ -104,6 +104,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/follow/**").permitAll()
                         .requestMatchers("/api/v1/movie/bookmark-list", "/api/v1/movie/watched-list").permitAll() // 찜, 봤어요 리스트 인증 허가
                         .requestMatchers("/api/v1/recommendation/**").permitAll()
+                        .requestMatchers("/api/v1/review/user/{nickname}/latest","/api/v1/review/movie/{tmdbId}/latest","/api/v1/review/movie/{tmdbId}/popular").permitAll()
                         .anyRequest().authenticated()
                 );
 
