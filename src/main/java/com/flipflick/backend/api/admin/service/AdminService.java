@@ -1,6 +1,7 @@
 package com.flipflick.backend.api.admin.service;
 
 import com.flipflick.backend.api.admin.dto.*;
+import com.flipflick.backend.api.debate.repository.DebateCommentRepository;
 import com.flipflick.backend.api.debate.repository.DebateRepository;
 import com.flipflick.backend.api.member.dto.MemberListResponseDto;
 import com.flipflick.backend.api.member.entity.Member;
@@ -30,6 +31,7 @@ public class AdminService {
     private final ReviewRepository reviewRepository;
     private final ReportRepository reportRepository;
     private final DebateRepository debateRepository;
+    private final DebateCommentRepository debateCommentRepository;
 
     public DashboardStatResponseDto getDashboardStats() {
         Map<String, Map<String, List<TimeSeriesData>>> stats = new HashMap<>();
@@ -229,14 +231,39 @@ public class AdminService {
         }
 
         switch (request.getAction()) {
-            case "경고" -> target.addWarning();
-            case "정지" -> target.suspend();
-            case "차단" -> target.blockPermanently();
+            case "경고" -> {
+                target.addWarning();
+                softDeleteTarget(report);
+            }
+            case "정지" -> {
+                target.suspend();
+                softDeleteTarget(report);
+            }
+            case "차단" -> {
+                target.blockPermanently();
+                softDeleteTarget(report);
+            }
             case "기각" -> {} // 아무것도 안함
             default -> throw new BadRequestException(ErrorStatus.INVALID_REPORT_ACTION.getMessage());
         }
 
+
         report.markAsHandled();
+    }
+
+    private void softDeleteTarget(Report report) {
+        Long entityId = report.getTargetEntityId();
+        String type = report.getType();
+
+        switch (type) {
+            case "리뷰" -> reviewRepository.findById(entityId)
+                    .ifPresent(review -> review.softDelete());
+            case "토론" -> debateRepository.findById(entityId)
+                    .ifPresent(debate -> debate.softDelete());
+            case "댓글" -> debateCommentRepository.findById(entityId)
+                    .ifPresent(comment -> comment.softDelete());
+            default -> throw new BadRequestException(ErrorStatus.INVALID_REPORT_TYPE_ACTION.getMessage());
+        }
     }
 
     public Page<ReportAdminResponseDto> getReportsWithFilter(int page, int size, String keyword, String status) {
