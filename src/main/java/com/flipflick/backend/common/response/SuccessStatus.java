@@ -72,11 +72,8 @@ public enum SuccessStatus {
     REPORT_LIST_SUCCESS(HttpStatus.OK,"신고 목록 조회 성공"),
     REPORT_UPDATE_SUCCESS(HttpStatus.OK,"신고 처리 성공"),
 
-    /**
-     * 201
-     */
+    SEND_RECOMMENDATION_SUCCESS(HttpStatus.OK,"유사한 성향 리뷰 조회 성공");
 
-    ;
 
     private final HttpStatus httpStatus;
     private final String message;
