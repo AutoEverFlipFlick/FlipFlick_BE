@@ -23,6 +23,9 @@ public class ReviewResponseDto {
         @Schema(description = "리뷰 ID", example = "1")
         private Long reviewId;
 
+        @Schema(description = "작성자 ID")
+        private Long memberId;
+
         @Schema(description = "리뷰 내용", example = "정말 재미있는 영화였습니다.")
         private String content;
 

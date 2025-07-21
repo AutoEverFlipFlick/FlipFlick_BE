@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,13 +19,28 @@ public class DebateResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Schema(description = "토론 상세 정보")
-    public static class Detail {
+    public static class DebateDetail {
         @Schema(description = "토론 ID", example = "1")
         private Long debateId;
 
+        @Schema(description = "작성자 ID")
+        private Long memberId;
+
+        @Schema(description = "tmdbID")
+        private Long tmdbId;
+
+        @Schema(description = "영화 상세 정보")
+        private DebateMovieInfo movie;
+
+        @Schema(description = "영화 제목")
+        private String movieTitle;
+
+        @Schema(description = "토론 제목")
+        private String debateTitle;
+
         @Schema(description = "토론 내용", example = "정말 재미있는 영화였습니다.")
         private String content;
-        
+
         @Schema(description = "스포일러 포함 여부", example = "false")
         private Boolean spoiler;
 
@@ -58,9 +74,9 @@ public class DebateResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Schema(description = "토론 목록 페이지네이션 응답")
-    public static class PageResponse {
+    public static class DebatePageResponse {
         @Schema(description = "토론 목록")
-        private List<Detail> content;
+        private List<DebateDetail> content;
 
         @Schema(description = "현재 페이지", example = "0")
         private int currentPage;
@@ -80,8 +96,8 @@ public class DebateResponseDto {
         @Schema(description = "마지막 페이지 여부", example = "false")
         private boolean last;
 
-        public static PageResponse from(Page<Detail> page) {
-            return PageResponse.builder()
+        public static DebatePageResponse from(Page<DebateDetail> page) {
+            return DebatePageResponse.builder()
                     .content(page.getContent())
                     .currentPage(page.getNumber())
                     .totalPages(page.getTotalPages())
@@ -98,9 +114,12 @@ public class DebateResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Schema(description = "토론 생성 응답")
-    public static class Create {
+    public static class DebateCreate {
         @Schema(description = "생성된 토론 ID", example = "1")
         private Long debateId;
+
+        @Schema(description = "토론 제목")
+        private String debateTitle;
 
         @Schema(description = "토론 내용", example = "정말 재미있는 영화였습니다.")
         private String content;
@@ -111,9 +130,12 @@ public class DebateResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Schema(description = "토론 수정 응답")
-    public static class Update {
+    public static class DebateUpdate {
         @Schema(description = "수정된 토론 ID", example = "1")
         private Long debateId;
+
+        @Schema(description = "토론 제목")
+        private String debateTitle;
 
         @Schema(description = "수정된 토론 내용", example = "수정된 토론 내용입니다.")
         private String content;
@@ -124,7 +146,7 @@ public class DebateResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Schema(description = "토론 삭제 응답")
-    public static class Delete {
+    public static class DebateDelete {
         @Schema(description = "삭제된 토론 ID", example = "1")
         private Long debateId;
 
@@ -137,7 +159,7 @@ public class DebateResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Schema(description = "토론 좋아요/싫어요 응답")
-    public static class LikeHate {
+    public static class DebateLikeHate {
         @Schema(description = "토론 ID", example = "1")
         private Long debateId;
 
@@ -152,5 +174,26 @@ public class DebateResponseDto {
 
         @Schema(description = "현재 싫어요 수", example = "2")
         private Long hateCnt;
+    }
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "영화 정보")
+    public static class DebateMovieInfo {
+        @Schema(description = "영화 TMDB ID")
+        private Long tmdbId;
+
+        @Schema(description = "영화 제목")
+        private String title;
+
+        @Schema(description = "영화 포스터 이미지")
+        private String posterImg;
+
+        @Schema(description = "영화 개봉일")
+        private LocalDate releaseDate;
+
+        @Schema(description = "영화 평점")
+        private Double rating;
     }
 }

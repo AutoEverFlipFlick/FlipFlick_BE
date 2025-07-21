@@ -27,6 +27,9 @@ public class Debate extends BaseTimeEntity {
     @JoinColumn(name = "movie_id", nullable = false)
     private Movie movie;
 
+    @Column(name="debate_title",nullable = false)
+    private String debateTitle;
+
     @Lob
     @Column(nullable = false)
     private String content;
@@ -47,7 +50,8 @@ public class Debate extends BaseTimeEntity {
     private Boolean isDeleted = false;
 
     // 토론 수정
-    public void updateDebate(String content, Boolean spoiler) {
+    public void updateDebate(String debateTitle, String content, Boolean spoiler) {
+        this.debateTitle = debateTitle;
         this.content = content;
         this.spoiler = spoiler;
     }
