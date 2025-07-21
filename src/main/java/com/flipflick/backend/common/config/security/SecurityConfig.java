@@ -111,6 +111,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/review/movie/**", "/api/v1/review/user/**").permitAll()
                         .requestMatchers("/api/v1/debate/user/**").permitAll()
                         .requestMatchers("/api/v1/recommendation/**").permitAll()
+                        .requestMatchers("/api/v1/review/user/{nickname}/latest","/api/v1/review/movie/{tmdbId}/latest","/api/v1/review/movie/{tmdbId}/popular").permitAll()
                         .anyRequest().authenticated()
                 );
 
