@@ -46,6 +46,7 @@ public enum ErrorStatus {
     PASSWORD_RESET_INVALID_CODE(HttpStatus.BAD_REQUEST, "비밀번호 재설정 코드가 유효하지 않습니다."),
     PASSWORD_RESET_EXPIRED_CODE(HttpStatus.BAD_REQUEST, "비밀번호 재설정 코드가 만료되었습니다."),
     PASSWORD_RESET_ALREADY_USED(HttpStatus.BAD_REQUEST, "이미 사용된 비밀번호 재설정 코드입니다."),
+    INVALID_REPORT_TYPE_ACTION(HttpStatus.BAD_REQUEST,"유효하지 않은 신고 타입입니다."),
 
     /**
      * 401 UNAUTHORIZED
@@ -73,6 +74,8 @@ public enum ErrorStatus {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "신고를 찾을 수 없습니다."),
     EMAIL_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
+    REPORTER_NOT_FOUND(HttpStatus.NOT_FOUND, "신고자를 찾을 수 없습니다."),
+    TARGET_NOT_FOUND(HttpStatus.NOT_FOUND, "피신고자를 찾을 수 없습니다."),
 
     // PlayList 관련 에러
     PLAYLIST_NOT_FOUND(HttpStatus.NOT_FOUND, "플레이리스트를 찾을 수 없습니다."),
