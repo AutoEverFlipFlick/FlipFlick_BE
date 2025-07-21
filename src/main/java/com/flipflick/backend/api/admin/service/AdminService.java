@@ -36,20 +36,20 @@ public class AdminService {
 
         stats.put("user", Map.of(
                 "7D", getUserStats(7, 1),
-                "30D", getUserStats(30, 5),
-                "90D", getUserStats(90, 10)
+                "30D", getUserStats(30, 3),
+                "90D", getUserStats(90, 5)
         ));
 
         stats.put("review", Map.of(
                 "7D", getReviewStats(7, 1),
-                "30D", getReviewStats(30, 5),
-                "90D", getReviewStats(90, 10)
+                "30D", getReviewStats(30, 3),
+                "90D", getReviewStats(90, 5)
         ));
 
         stats.put("debate", Map.of(
                 "7D", getDebateStats(7, 1),
-                "30D", getDebateStats(30, 5),
-                "90D", getDebateStats(90, 10)
+                "30D", getDebateStats(30, 3),
+                "90D", getDebateStats(90, 5)
         ));
 
 

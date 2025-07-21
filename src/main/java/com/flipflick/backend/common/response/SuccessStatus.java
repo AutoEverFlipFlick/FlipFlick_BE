@@ -71,12 +71,20 @@ public enum SuccessStatus {
     SEND_DEBATE_DETAIL_SUCCESS(HttpStatus.OK, "토론 상세 조회 성공"),
     REPORT_LIST_SUCCESS(HttpStatus.OK,"신고 목록 조회 성공"),
     REPORT_UPDATE_SUCCESS(HttpStatus.OK,"신고 처리 성공"),
+    SEND_DEBATE_COMMENT_CREATE_SUCCESS(HttpStatus.OK, "댓글 작성 성공"),
+    SEND_DEBATE_COMMENT_UPDATE_SUCCESS(HttpStatus.OK, "댓글 수정 성공"),
+    SEND_DEBATE_COMMENT_DELETE_SUCCESS(HttpStatus.OK, "댓글 삭제 성공"),
+    PASSWORD_RESET_LINK_SENT(HttpStatus.OK, "비밀번호 재설정 링크가 이메일로 전송되었습니다."),
+    PASSWORD_RESET_SUCCESS(HttpStatus.OK, "비밀번호가 성공적으로 재설정되었습니다."),
     ALARM_READ_SUCCESS(HttpStatus.OK, "알람 읽음 처리 성공"),
     SEND_ALARM_LIST_SUCCESS(HttpStatus.OK, "알람 히스토리 목록 반환 성공"),
-    SEND_RECOMMENDATION_SUCCESS(HttpStatus.OK,"유사한 성향 리뷰 조회 성공");
+    SEND_RECOMMENDATION_SUCCESS(HttpStatus.OK,"유사한 성향 리뷰 조회 성공"),
     /**
      * 201
      */
+
+
+    ;
 
     private final HttpStatus httpStatus;
     private final String message;

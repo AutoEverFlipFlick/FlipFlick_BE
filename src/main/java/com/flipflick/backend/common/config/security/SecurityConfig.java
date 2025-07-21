@@ -54,6 +54,7 @@ public class SecurityConfig {
                 "http://localhost:3000",
                 "http://localhost:5173",
                 "http://localhost:8080",
+                "https://www.flipflick.life",
                 "http://localhost:5000"
         ));
         corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
@@ -102,6 +103,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/playlist/all","/api/v1/playlist/{playListId}", "/api/v1/playlist/**").permitAll()
                         .requestMatchers("/api/v1/s3/image").permitAll()
                         .requestMatchers("/api/v1/follow/**").permitAll()
+                        .requestMatchers("/api/v1/movie/bookmark-list", "/api/v1/movie/watched-list").permitAll() // 찜, 봤어요 리스트 인증 허가
+                        .requestMatchers("/api/v1/password-reset/**").permitAll() // 비밀번호 재설정 인증 허가
                         .requestMatchers("/api/v1/movie/bookmark-list", "/api/v1/movie/watched-list", "/api/v1/movie/like-list").permitAll() // 찜, 봤어요 리스트 인증 허가
                         .requestMatchers("/api/v1/alarms/**").permitAll()
                         .requestMatchers("/api/v1/popcorn/my", "/api/v1/popcorn/user/*").permitAll()
