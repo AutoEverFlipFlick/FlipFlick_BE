@@ -11,6 +11,7 @@ import com.flipflick.backend.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -79,25 +80,26 @@ public class FollowController {
     // 팔로워 목록 조회
     @Operation(summary = "팔로워 리스트 조회 API", description = "팔로워 리스트를 조회합니다.")
     @GetMapping("/{memberId}/follower")
-    public ResponseEntity<ApiResponse<List<MemberResponseDto>>> getFollowers(@PathVariable Long memberId) {
-        List<Member> followers = followService.getFollowers(memberId);
-        List<MemberResponseDto> result = followers.stream()
-                .map(MemberResponseDto::of)
-                .toList();
-
-        return ApiResponse.success(SuccessStatus.SEND_FOLLOWER_LIST_SUCCESS, result);
+    public ResponseEntity<ApiResponse<Page<MemberResponseDto>>> getFollowers(
+            @PathVariable Long memberId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Page<Member> followers = followService.getFollowers(memberId, page, size);
+        Page<MemberResponseDto> dtoPage = followers.map(MemberResponseDto::of);
+        return ApiResponse.success(SuccessStatus.SEND_FOLLOWER_LIST_SUCCESS, dtoPage);
     }
 
     // 팔로잉 목록 조회
     @Operation(summary = "팔로우 리스트 조회 API", description = "팔로우 리스트를 조회합니다.")
     @GetMapping("/{memberId}/following")
-    public ResponseEntity<ApiResponse<List<MemberResponseDto>>> getFollowings(@PathVariable Long memberId) {
-        List<Member> followings = followService.getFollowings(memberId);
-        List<MemberResponseDto> result = followings.stream()
-                .map(MemberResponseDto::of)
-                .toList();
-
-        return ApiResponse.success(SuccessStatus.SEND_FOLLOWING_LIST_SUCCESS, result);
+    public ResponseEntity<ApiResponse<Page<MemberResponseDto>>> getFollowings(
+            @PathVariable Long memberId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        Page<Member> followings = followService.getFollowings(memberId, page, size);
+        Page<MemberResponseDto> dtoPage = followings.map(MemberResponseDto::of);
+        return ApiResponse.success(SuccessStatus.SEND_FOLLOWING_LIST_SUCCESS, dtoPage);
     }
 
     // 팔로우 여부 확인
