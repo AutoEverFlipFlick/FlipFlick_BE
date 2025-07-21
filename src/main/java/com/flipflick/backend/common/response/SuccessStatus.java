@@ -71,6 +71,9 @@ public enum SuccessStatus {
     SEND_DEBATE_DETAIL_SUCCESS(HttpStatus.OK, "토론 상세 조회 성공"),
     REPORT_LIST_SUCCESS(HttpStatus.OK,"신고 목록 조회 성공"),
     REPORT_UPDATE_SUCCESS(HttpStatus.OK,"신고 처리 성공"),
+    SEND_DEBATE_COMMENT_CREATE_SUCCESS(HttpStatus.OK, "댓글 작성 성공"),
+    SEND_DEBATE_COMMENT_UPDATE_SUCCESS(HttpStatus.OK, "댓글 수정 성공"),
+    SEND_DEBATE_COMMENT_DELETE_SUCCESS(HttpStatus.OK, "댓글 삭제 성공"),
 
     /**
      * 201

@@ -41,6 +41,8 @@ public enum ErrorStatus {
     DEBATE_UPDATE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 토론만 수정할 수 있습니다."),
     DEBATE_DELETE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 토론만 삭제할 수 있습니다."),
     DEBATE_SELF_LIKE_HATE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 토론에는 좋아요/싫어요를 할 수 없습니다."),
+    DEBATE_COMMENT_UPDATE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 댓글만 수정할 수 있습니다."),
+    DEBATE_COMMENT_DELETE_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 댓글만 삭제할 수 있습니다."),
 
     /**
      * 401 UNAUTHORIZED
@@ -74,6 +76,7 @@ public enum ErrorStatus {
 
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다."),
     DEBATE_NOT_FOUND(HttpStatus.NOT_FOUND, "토론을 찾을 수 없습니다."),
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
 
     // follow 관련 에러
     FOLLOW_NOT_FOUND(HttpStatus.NOT_FOUND, "팔로우 정보가 없습니다."),
