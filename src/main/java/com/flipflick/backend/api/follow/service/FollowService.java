@@ -9,6 +9,9 @@ import com.flipflick.backend.common.exception.NotFoundException;
 import com.flipflick.backend.common.response.ErrorStatus;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,26 +81,24 @@ public class FollowService {
 
     // 팔로워
     @Transactional(readOnly = true)
-    public List<Member> getFollowers(Long memberId) {
+    public Page<Member> getFollowers(Long memberId, int page, int size) {
         Member followed = memberRepository.findById(memberId)
-                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));;
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
-        return followRepository.findAllByFollowed(followed)
-                .stream()
-                .map(Follow::getFollowing)  // 나를 팔로우한 사람
-                .toList();
+        Pageable pageable = PageRequest.of(page, size);
+        return followRepository.findAllByFollowed(followed, pageable)
+                .map(Follow::getFollowing);
     }
 
     // 팔로잉
     @Transactional(readOnly = true)
-    public List<Member> getFollowings(Long memberId) {
+    public Page<Member> getFollowings(Long memberId, int page, int size) {
         Member following = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
-        return followRepository.findAllByFollowing(following)
-                .stream()
-                .map(Follow::getFollowed)  // 내가 팔로우한 사람
-                .toList();
+        Pageable pageable = PageRequest.of(page, size);
+        return followRepository.findAllByFollowing(following, pageable)
+                .map(Follow::getFollowed);
     }
 
     // 팔로우 여부 확인
