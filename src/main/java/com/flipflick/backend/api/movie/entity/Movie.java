@@ -28,7 +28,7 @@ public class Movie extends BaseTimeEntity {
     private String originalTitle;   // 원제목
 
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "LONGTEXT")
     private String overview;        // 줄거리
 
     private String posterImg;       // 포스터
