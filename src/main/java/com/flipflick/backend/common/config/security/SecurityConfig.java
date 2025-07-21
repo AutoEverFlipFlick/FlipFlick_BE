@@ -99,13 +99,18 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/search/movie", "/api/v1/search/cast").permitAll() // 검색 인증 허가
                         .requestMatchers("/api/v1/movie/view", "/api/v1/cast/view").permitAll() // 영화, 배우 상세 조회 인증 허가
                         .requestMatchers("/api/v1/member/user-info", "/api/v1/member/user-info/*", "/api/v1/member/kakao", "/api/v1/member/naver", "/api/v1/member/check/nickname", "/api/v1/member/check/email").permitAll()
-                        .requestMatchers("/api/v1/playlist/all","/api/v1/playlist/{playListId}").permitAll()
+                        .requestMatchers("/api/v1/playlist/all","/api/v1/playlist/{playListId}", "/api/v1/playlist/**").permitAll()
                         .requestMatchers("/api/v1/s3/image").permitAll()
                         .requestMatchers("/api/v1/follow/**").permitAll()
-                        .requestMatchers("/api/v1/movie/bookmark-list", "/api/v1/movie/watched-list").permitAll() // 찜, 봤어요 리스트 인증 허가
+                        .requestMatchers("/api/v1/movie/bookmark-list", "/api/v1/movie/watched-list", "/api/v1/movie/like-list").permitAll() // 찜, 봤어요 리스트 인증 허가
+                        .requestMatchers("/api/v1/alarms/**").permitAll()
+                        .requestMatchers("/api/v1/popcorn/my", "/api/v1/popcorn/user/*").permitAll()
+                        .requestMatchers("/api/v1/review/movie/**", "/api/v1/review/user/**").permitAll()
+                        .requestMatchers("/api/v1/debate/user/**").permitAll()
                         .requestMatchers("/api/v1/recommendation/**").permitAll()
                         .anyRequest().authenticated()
                 );
+
 
         return http.build();
     }
