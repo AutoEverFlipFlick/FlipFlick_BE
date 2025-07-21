@@ -205,6 +205,33 @@ public class MemberController {
         return ApiResponse.success_only(SuccessStatus.UPDATE_SOCIAL_INFO_SUCCESS);
     }
 
+    @Operation(
+            summary = "로그아웃 API", description = "로그아웃")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그아웃 성공")
+    })
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request, HttpServletResponse response) {
+        String refresh = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("refresh")) {
+                    refresh = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        memberService.logout(refresh);
+
+        Cookie cookie = new Cookie("refresh", null);
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+
+        return ApiResponse.success_only(SuccessStatus.LOGOUT_SUCCESS);
+    }
+
 
 
 }

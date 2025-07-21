@@ -93,7 +93,7 @@ public class SecurityConfig {
                 // 인가(Authorization) 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/v1/member/login", "/api/v1/member/signup", "/api/v1/member/reissue", "/v3/api-docs/**",
+                                "/api/v1/member/login", "/api/v1/member/signup", "/api/v1/member/reissue", "/api/v1/member/logout","/v3/api-docs/**",
                                 "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/h2-console/**", "/health", "/api-doc").permitAll() // 회원, 스웨거, H2 인증 허가
                         .requestMatchers("/api/v1/search/movie", "/api/v1/search/cast", "/api/v1/search/playlist", "/api/v1/search/member").permitAll() // 검색 인증 허가
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")

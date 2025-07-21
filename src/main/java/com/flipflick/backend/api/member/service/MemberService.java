@@ -189,4 +189,23 @@ public class MemberService {
 
     }
 
+    @Transactional
+    public void logout(String refreshToken) {
+        if (refreshToken == null) {
+            throw new UnauthorizedException(ErrorStatus.REFRESH_TOKEN_NOT_FOUND.getMessage());
+        }
+
+        // 토큰에서 사용자 ID 추출
+        Long memberId = jwtUtil.getId(refreshToken);
+
+        // 사용자 조회
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+
+
+
+        // 리프레시 토큰 삭제
+        member.updateRefreshToken(null, 0L);
+    }
+
 }
