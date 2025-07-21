@@ -53,7 +53,8 @@ public class SecurityConfig {
         corsConfiguration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "http://localhost:5173",
-                "http://localhost:8080"
+                "http://localhost:8080",
+                "http://localhost:5000"
         ));
         corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
         corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
@@ -106,6 +107,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/popcorn/my", "/api/v1/popcorn/user/*").permitAll()
                         .requestMatchers("/api/v1/review/movie/**", "/api/v1/review/user/**").permitAll()
                         .requestMatchers("/api/v1/debate/user/**").permitAll()
+                        .requestMatchers("/api/v1/recommendation/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

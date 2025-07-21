@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 public class ReviewResponseDto {
@@ -66,38 +67,52 @@ public class ReviewResponseDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "리뷰 목록 페이지네이션 응답")
+    @Schema(description = "리뷰 페이지 응답")
     public static class PageResponse {
         @Schema(description = "리뷰 목록")
-        private List<Detail> content;
+        private List<Detail> reviews;
 
-        @Schema(description = "현재 페이지", example = "0")
+        @Schema(description = "현재 페이지")
         private int currentPage;
 
-        @Schema(description = "전체 페이지 수", example = "10")
+        @Schema(description = "전체 페이지 수")
         private int totalPages;
 
-        @Schema(description = "전체 요소 수", example = "95")
+        @Schema(description = "전체 요소 수")
         private long totalElements;
 
-        @Schema(description = "현재 페이지 요소 수", example = "10")
-        private int numberOfElements;
-
-        @Schema(description = "첫 페이지 여부", example = "true")
+        @Schema(description = "첫 페이지 여부")
         private boolean first;
 
-        @Schema(description = "마지막 페이지 여부", example = "false")
+        @Schema(description = "마지막 페이지 여부")
         private boolean last;
 
+        @Schema(description = "빈 페이지 여부")
+        private boolean empty;
+
+        // 🎯 추가: empty() 정적 메서드
+        public static PageResponse empty() {
+            return PageResponse.builder()
+                    .reviews(Collections.emptyList())
+                    .currentPage(0)
+                    .totalPages(0)
+                    .totalElements(0L)
+                    .first(true)
+                    .last(true)
+                    .empty(true)
+                    .build();
+        }
+
+        // 🎯 추가: from() 메서드
         public static PageResponse from(Page<Detail> page) {
             return PageResponse.builder()
-                    .content(page.getContent())
+                    .reviews(page.getContent())
                     .currentPage(page.getNumber())
                     .totalPages(page.getTotalPages())
                     .totalElements(page.getTotalElements())
-                    .numberOfElements(page.getNumberOfElements())
                     .first(page.isFirst())
                     .last(page.isLast())
+                    .empty(page.isEmpty())
                     .build();
         }
     }
