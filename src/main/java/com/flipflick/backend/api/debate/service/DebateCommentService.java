@@ -58,6 +58,6 @@ public class DebateCommentService {
             throw new BadRequestException(ErrorStatus.DEBATE_COMMENT_DELETE_DENIED.getMessage());
         }
 
-        comment.delete();
+        comment.softDelete();
     }
 }

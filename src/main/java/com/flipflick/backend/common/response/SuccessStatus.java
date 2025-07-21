@@ -80,8 +80,15 @@ public enum SuccessStatus {
     SEND_ALARM_LIST_SUCCESS(HttpStatus.OK, "알람 히스토리 목록 반환 성공"),
     SEND_RECOMMENDATION_SUCCESS(HttpStatus.OK,"유사한 성향 리뷰 조회 성공"),
     LOGOUT_SUCCESS(HttpStatus.OK,"로그아웃 성공"),
-    GET_REVIEW_SUCCESS(HttpStatus.OK,"내 리뷰 조회 성공");
+    GET_REVIEW_SUCCESS(HttpStatus.OK,"내 리뷰 조회 성공"),
+    REPORT_CREATE_SUCCESS(HttpStatus.OK,"신고 등록 성공"),
+    REPORT_DELETE_SUCCESS(HttpStatus.OK,"신고 삭제 성공")
+    /**
+     * 201
+     */
 
+
+    ;
     private final HttpStatus httpStatus;
     private final String message;
 

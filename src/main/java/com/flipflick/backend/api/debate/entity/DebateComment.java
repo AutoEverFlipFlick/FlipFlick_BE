@@ -38,7 +38,7 @@ public class DebateComment extends BaseTimeEntity {
     }
 
 
-    public void delete() {
+    public void softDelete() {
         this.isDeleted = true;
     }
 }
