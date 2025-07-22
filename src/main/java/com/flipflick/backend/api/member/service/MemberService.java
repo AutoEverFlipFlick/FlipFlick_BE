@@ -5,6 +5,7 @@ import com.flipflick.backend.api.member.dto.*;
 import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.repository.MemberRepository;
 import com.flipflick.backend.common.exception.BadRequestException;
+import com.flipflick.backend.common.exception.BaseException;
 import com.flipflick.backend.common.exception.NotFoundException;
 import com.flipflick.backend.common.exception.UnauthorizedException;
 import com.flipflick.backend.common.jwt.JWTUtil;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +34,7 @@ public class MemberService {
     public void signup(MemberSignupRequestDto requestDto) {
 
         // 만약 이미 해당 이메일로 가입된 정보가 있다면 예외처리
-        if (memberRepository.findByEmail(requestDto.getEmail()).isPresent()) {
+        if (memberRepository.findByEmailAndIsDeletedFalse(requestDto.getEmail()).isPresent()) {
             throw new BadRequestException(ErrorStatus.ALREADY_REGISTERED_ACCOUNT_EXCEPTION.getMessage());
         }
 
@@ -51,12 +54,31 @@ public class MemberService {
     public LoginResponseDto login(LoginRequestDto requestDto) {
 
         // 1. 이메일로 사용자 조회
-        Member member = memberRepository.findByEmail(requestDto.getEmail())
+        Member member = memberRepository.findByEmailAndIsDeletedFalse(requestDto.getEmail())
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage()));
 
         // 2. 비밀번호 검증
         if (!passwordEncoder.matches(requestDto.getPassword(), member.getPassword())) {
             throw new BadRequestException(ErrorStatus.INVALID_PASSWORD_EXCEPTION.getMessage());
+        }
+
+        // 2.5. 정지/차단 상태 확인
+        if (member.getBlock() == 2) {
+            throw new BaseException(ErrorStatus.MEMBER_BLOCKED.getHttpStatus(), ErrorStatus.MEMBER_BLOCKED.getMessage());
+        }
+
+        if (member.getBlock() == 1) {
+            LocalDateTime unblockDate = member.getBlockDate().plusDays(7);
+            if (member.getBlockDate().plusDays(7).isBefore(LocalDateTime.now())) {
+                member.unblock();
+            } else {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+                String formattedDate = unblockDate.format(formatter);
+                throw new BaseException(
+                        ErrorStatus.MEMBER_SUSPENDED.getHttpStatus(),
+                        "정지된 회원입니다. 해제일: " + formattedDate
+                );
+            }
         }
 
         // 3. JWT 생성
@@ -77,7 +99,7 @@ public class MemberService {
     // 닉네임 변경
     @Transactional
     public void updateNickname(String email, String nickname) {
-        Member member = memberRepository.findByEmail(email)
+        Member member = memberRepository.findByEmailAndIsDeletedFalse(email)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage()));
         member.updateNickname(nickname);
     }
@@ -89,7 +111,7 @@ public class MemberService {
             throw new BadRequestException(ErrorStatus.PASSWORD_MISMATCH_EXCEPTION.getMessage());
         }
 
-        Member member = memberRepository.findByEmail(email)
+        Member member = memberRepository.findByEmailAndIsDeletedFalse(email)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage()));
 
         String encodedPassword = passwordEncoder.encode(request.getPassword());
@@ -99,7 +121,7 @@ public class MemberService {
     // 프로필 이미지 변경
     @Transactional
     public String updateProfileImage(String email, MultipartFile file) {
-        Member member = memberRepository.findByEmail(email)
+        Member member = memberRepository.findByEmailAndIsDeletedFalse(email)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage()));
 
         try {
@@ -116,14 +138,14 @@ public class MemberService {
     // 회원 정보 조회
     public Member getMemberInfo(Long userId) {
 
-        Member member = memberRepository.findById(userId).orElseThrow(()-> new BadRequestException(
+        Member member = memberRepository.findByIdAndIsDeletedFalse(userId).orElseThrow(()-> new BadRequestException(
                 ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage()));
         return member;
     }
 
     // ID로 회원 조회
     public MemberResponseDto getMemberById(Long id) {
-        Member member = memberRepository.findById(id)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 회원을 찾을 수 없습니다."));
         return MemberResponseDto.of(member);
     }
@@ -152,7 +174,7 @@ public class MemberService {
         Long id = jwtUtil.getId(refresh);
         String role = jwtUtil.getRole(refresh);
 
-        Member member = memberRepository.findById(id)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         if (!refresh.equals(member.getRefreshToken())) {
@@ -172,16 +194,16 @@ public class MemberService {
     }
 
     public boolean isEmailDuplicate(String email) {
-        return memberRepository.existsByEmail(email);
+        return memberRepository.existsByEmailAndIsDeletedFalse(email);
     }
 
     public boolean isNicknameDuplicate(String nickname) {
-        return memberRepository.existsByNickname(nickname);
+        return memberRepository.existsByNicknameAndIsDeletedFalse(nickname);
     }
 
     @Transactional
     public void updateSocialInfo(Long memberId, SocialInfoRequestDto dto) {
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         member.updateNickname(dto.getNickname());
@@ -199,7 +221,7 @@ public class MemberService {
         Long memberId = jwtUtil.getId(refreshToken);
 
         // 사용자 조회
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
 
@@ -208,4 +230,11 @@ public class MemberService {
         member.updateRefreshToken(null, 0L);
     }
 
+    @Transactional
+    public void softDelete(Long userId) {
+        Member member = memberRepository.findByIdAndIsDeletedFalse(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
+        member.softDelete();
+        memberRepository.save(member);
+    }
 }

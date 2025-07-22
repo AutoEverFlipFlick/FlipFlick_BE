@@ -20,13 +20,13 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     // 특정 영화의 리뷰 조회 (삭제되지 않은 것만, 최신순)
     @Query("SELECT r FROM Review r " +
-            "WHERE r.movie.tmdbId = :tmdbId AND r.isDeleted = false " +
+            "WHERE r.movie.tmdbId = :tmdbId AND r.isDeleted = false AND r.member.isDeleted = false " +
             "ORDER BY r.createdAt DESC")
     Page<Review> findByMovieTmdbIdAndIsDeletedFalseOrderByCreatedAtDesc(@Param("tmdbId") Long tmdbId, Pageable pageable);
 
     // 특정 영화의 리뷰 조회 (삭제되지 않은 것만, 인기순)
     @Query("SELECT r FROM Review r " +
-            "WHERE r.movie.tmdbId = :tmdbId AND r.isDeleted = false " +
+            "WHERE r.movie.tmdbId = :tmdbId AND r.isDeleted = false AND r.member.isDeleted = false " +
             "ORDER BY r.likeCnt DESC, r.createdAt DESC")
     Page<Review> findByMovieTmdbIdAndIsDeletedFalseOrderByLikeCntDesc(@Param("tmdbId") Long tmdbId, Pageable pageable);
 
@@ -36,11 +36,11 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Optional<Review> findByMemberIdAndMovieTmdbIdAndIsDeletedFalse(@Param("memberId") Long memberId, @Param("tmdbId") Long tmdbId);
 
     // 특정 리뷰 조회 (삭제되지 않은 것만)
-    @Query("SELECT r FROM Review r WHERE r.id = :reviewId AND r.isDeleted = false")
+    @Query("SELECT r FROM Review r WHERE r.id = :reviewId AND r.isDeleted = false AND r.member.isDeleted = false")
     Optional<Review> findByIdAndIsDeletedFalse(@Param("reviewId") Long reviewId);
 
     // 특정 영화의 평점 계산용
-    @Query("SELECT AVG(r.star) FROM Review r WHERE r.movie.tmdbId = :tmdbId AND r.isDeleted = false")
+    @Query("SELECT AVG(r.star) FROM Review r WHERE r.movie.tmdbId = :tmdbId AND r.isDeleted = false AND r.member.isDeleted = false")
     Double calculateAverageStarByMovieTmdbId(@Param("tmdbId") Long tmdbId);
 
     // 특정 영화의 리뷰 개수

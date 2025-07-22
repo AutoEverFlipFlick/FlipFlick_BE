@@ -14,31 +14,31 @@ public interface DebateLikeHateRepository extends JpaRepository<DebateLikeHate, 
 
     // 특정 사용자의 특정 토론에 대한 좋아요/싫어요 조회
     @Query("SELECT dlh FROM DebateLikeHate dlh " +
-            "WHERE dlh.debate.id = :debateId AND dlh.member.id = :memberId")
+            "WHERE dlh.debate.id = :debateId AND dlh.member.id = :memberId AND dlh.member.isDeleted = false ")
     Optional<DebateLikeHate> findByDebateIdAndMemberId(@Param("debateId") Long debateId, @Param("memberId") Long memberId);
 
     // 특정 토론의 좋아요 수
     @Query("SELECT COUNT(dlh) FROM DebateLikeHate dlh " +
-            "WHERE dlh.debate.id = :debateId AND dlh.type = 'LIKE'")
+            "WHERE dlh.debate.id = :debateId AND dlh.type = 'LIKE' AND dlh.member.isDeleted=false ")
     Long countLikesByDebateId(@Param("debateId") Long debateId);
 
     // 특정 토론의 싫어요 수
     @Query("SELECT COUNT(dlh) FROM DebateLikeHate dlh " +
-            "WHERE dlh.debate.id = :debateId AND dlh.type = 'HATE'")
+            "WHERE dlh.debate.id = :debateId AND dlh.type = 'HATE' AND dlh.member.isDeleted = false ")
     Long countHatesByDebateId(@Param("debateId") Long debateId);
 
 
     // 수정: 특정 날짜 끝 시점의 좋아요 수 계산
     @Query("SELECT COUNT(dlh) FROM DebateLikeHate dlh " +
             "WHERE dlh.debate.member.id = :memberId AND dlh.type = 'LIKE' " +
-            "AND dlh.createdAt < :endOfDay")
+            "AND dlh.createdAt < :endOfDay AND dlh.member.isDeleted = false ")
     Integer countLikesByMemberIdUntilDate(@Param("memberId") Long memberId,
                                           @Param("endOfDay") LocalDateTime endOfDay);
 
     // 수정: 특정 날짜 끝 시점의 싫어요 수 계산
     @Query("SELECT COUNT(dlh) FROM DebateLikeHate dlh " +
             "WHERE dlh.debate.member.id = :memberId AND dlh.type = 'HATE' " +
-            "AND dlh.createdAt < :endOfDay")
+            "AND dlh.createdAt < :endOfDay AND dlh.member.isDeleted = false ")
     Integer countHatesByMemberIdUntilDate(@Param("memberId") Long memberId,
                                           @Param("endOfDay") LocalDateTime endOfDay);
 }

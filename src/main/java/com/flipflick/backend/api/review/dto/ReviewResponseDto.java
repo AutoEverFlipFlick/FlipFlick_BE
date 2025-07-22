@@ -20,6 +20,10 @@ public class ReviewResponseDto {
     @AllArgsConstructor
     @Schema(description = "리뷰 상세 정보")
     public static class Detail {
+
+        @Schema(description = "tmdb ID", example = "1")
+        private Long tmdbId;
+
         @Schema(description = "리뷰 ID", example = "1")
         private Long reviewId;
 

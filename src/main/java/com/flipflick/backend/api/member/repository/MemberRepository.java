@@ -14,19 +14,21 @@ import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member,Long> {
 
-    Optional<Member> findByEmail(String email);
+    Optional<Member> findByIdAndIsDeletedFalse(Long id);
 
-    Optional<Member> findBySocialId(String socialId);
+    Optional<Member> findByEmailAndIsDeletedFalse(String email);
 
-    Optional<Member> findByNickname(String nickname);
+    Optional<Member> findBySocialIdAndIsDeletedFalse(String socialId);
+
+    Optional<Member> findByNicknameAndIsDeletedFalse(String nickname);
 
     // 정지 기간이 만료된 사용자들 조회
     @Query("SELECT m FROM Member m WHERE m.block = 1 AND m.blockDate <= :now")
     List<Member> findExpiredSuspensions(@Param("now") LocalDateTime now);
-    boolean existsByEmail(String email);
-    boolean existsByNickname(String nickname);
-
-    Page<Member> findByNicknameContaining(String keyword, Pageable pageable);
+    boolean existsByEmailAndIsDeletedFalse(String email);
+    boolean existsByNicknameAndIsDeletedFalse(String nickname);
+    boolean existsByIdAndIsDeletedFalse(Long id);
+    Page<Member> findByNicknameContainingAndIsDeletedFalse(String keyword, Pageable pageable);
 
     @Query(value = """
     SELECT CAST(m.created_at AS DATE) AS date, COUNT(*) AS count

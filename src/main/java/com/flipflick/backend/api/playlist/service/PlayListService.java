@@ -103,7 +103,7 @@ public class PlayListService {
 
     // 5. 플레이리스트 생성
     public PlayListResponseDto.Create createPlayList(Long userId, PlayListRequestDto.Create request) {
-        Member member = memberRepository.findById(userId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
@@ -151,7 +151,7 @@ public class PlayListService {
     // 6. 플레이리스트 북마크 토글
     @Transactional
     public boolean toggleBookmark(Long userId, Long playListId) {
-        Member member = memberRepository.findById(userId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         PlayList playList = playListRepository.findById(playListId)
@@ -184,7 +184,7 @@ public class PlayListService {
     // 7. 플레이리스트 수정
     @Transactional
     public PlayListResponseDto.Update updatePlayList(Long userId, Long playListId, PlayListRequestDto.Update request) {
-        Member member = memberRepository.findById(userId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         PlayList playList = playListRepository.findByIdAndIsDeletedFalse(playListId)
@@ -269,13 +269,13 @@ public class PlayListService {
     // 8. 플레이리스트 소프트 삭제
     @Transactional
     public PlayListResponseDto.Delete deletePlayList(Long userId, Long playListId) {
-        Member member = memberRepository.findById(userId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         PlayList playList = playListRepository.findByIdAndIsDeletedFalse(playListId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.PLAYLIST_NOT_FOUND.getMessage()));
 
-        if (!playList.getMember().getId().equals(userId)) {
+        if (!playList.getMember().getId().equals(member.getId())) {
             throw new BadRequestException(ErrorStatus.PLAYLIST_ACCESS_DENIED.getMessage());
         }
 
@@ -298,11 +298,11 @@ public class PlayListService {
     //10. 사용자 북마크 플레이리스트 조회
     public PlayListResponseDto.BookmarkIds getBookmarkedPlayListIds(Long userId) {
         // 사용자 존재 확인
-        Member member = memberRepository.findById(userId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         // 북마크된 플레이리스트 ID 목록 조회
-        List<Long> playListIds = playListBookmarkRepository.findPlayListIdsByMemberId(userId);
+        List<Long> playListIds = playListBookmarkRepository.findPlayListIdsByMemberId(member.getId());
 
         return PlayListResponseDto.BookmarkIds.builder()
                 .playListIds(playListIds)
@@ -313,7 +313,7 @@ public class PlayListService {
     //11. 닉네임으로 플레이리스트 조회 (최신순, 공개된 것만)
     public PlayListResponseDto.PageResponse getPlayListsByNickname(String nickname, int page, int size) {
         // 닉네임으로 사용자 존재 확인
-        Member member = memberRepository.findByNickname(nickname)
+        Member member = memberRepository.findByNicknameAndIsDeletedFalse(nickname)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         Pageable pageable = PageRequest.of(page, size);

@@ -232,6 +232,12 @@ public class MemberController {
         return ApiResponse.success_only(SuccessStatus.LOGOUT_SUCCESS);
     }
 
+    @Operation(summary = "회원 탈퇴 API", description = "회원의 소프트 삭제(탈퇴) 처리")
+    @DeleteMapping("/withdraw")
+    public ResponseEntity<ApiResponse<Void>> withdraw(@AuthenticationPrincipal SecurityMember securityMember) {
+        memberService.softDelete(securityMember.getId());
+        return ApiResponse.success_only(SuccessStatus.WITHDRAW_SUCCESS);
+    }
 
 
 }

@@ -20,9 +20,9 @@ public class ReportService {
 
     @Transactional
     public void createReport(ReportRequestDto dto) {
-        Member reporter = memberRepository.findById(dto.getReporterId())
+        Member reporter = memberRepository.findByIdAndIsDeletedFalse(dto.getReporterId())
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.REPORTER_NOT_FOUND.getMessage()));
-        Member target = memberRepository.findById(dto.getTargetId())
+        Member target = memberRepository.findByIdAndIsDeletedFalse(dto.getTargetId())
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.TARGET_NOT_FOUND.getMessage()));
 
         Report report = Report.builder()
