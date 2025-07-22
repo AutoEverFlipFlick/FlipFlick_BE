@@ -67,6 +67,9 @@ public class DebateResponseDto {
 
         @Schema(description = "작성자 팝콘 지수", example = "85.5")
         private Double popcorn;
+
+        @Schema(description = "댓글 수", example = "5")
+        private int commentCount;
     }
 
     @Getter
