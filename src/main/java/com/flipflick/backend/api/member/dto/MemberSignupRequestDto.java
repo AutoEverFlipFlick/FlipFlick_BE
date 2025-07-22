@@ -46,7 +46,7 @@ public class MemberSignupRequestDto {
                 .socialType("NORMAL")
                 .socialId(null)
                 .block(0)
-                .isDeleted(0)
+                .isDeleted(false)
                 .role(Role.ROLE_USER)
                 .build();
     }

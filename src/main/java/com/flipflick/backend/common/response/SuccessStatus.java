@@ -86,12 +86,7 @@ public enum SuccessStatus {
     REPORT_DELETE_SUCCESS(HttpStatus.OK,"신고 삭제 성공"),
     SEND_TODAY_MOVIE_SUCCESS(HttpStatus.OK, "오늘의 TOP10 영화 조회 성공"),
 
-    /**
-     * 201
-     */
-
-
-    ;
+    WITHDRAW_SUCCESS(HttpStatus.OK, "회원 탈퇴 성공");
     private final HttpStatus httpStatus;
     private final String message;
 

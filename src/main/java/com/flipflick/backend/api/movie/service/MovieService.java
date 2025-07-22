@@ -74,7 +74,7 @@ public class MovieService {
         boolean myHate      = false;
 
         if (memberId != null) {
-            Member member = memberRepository.findById(memberId)
+            Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
                     .orElseThrow(() -> new BadRequestException(ErrorStatus.INCORRECT_USER_EXCEPTION.getMessage()));
 
             myBookmark = bookmarkRepository.existsByMemberAndMovie(member, movie);
@@ -324,7 +324,7 @@ public class MovieService {
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_MOVIE_EXCEPTION.getMessage()));
 
         // 회원 존재 확인
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.INCORRECT_USER_EXCEPTION.getMessage()));
 
         // 찜 여부 체크 → 있으면 delete, 없으면 save
@@ -345,7 +345,7 @@ public class MovieService {
     public MovieBWLHListResponseDTO getBookmarkedMovies(Long memberId, int page, int size) {
 
         // 회원 검증
-        if (!memberRepository.existsById(memberId)) {
+        if (!memberRepository.existsByIdAndIsDeletedFalse(memberId)) {
             throw new BadRequestException(ErrorStatus.INCORRECT_USER_EXCEPTION.getMessage());
         }
 
@@ -385,7 +385,7 @@ public class MovieService {
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_MOVIE_EXCEPTION.getMessage()));
 
         // 회원 존재 확인
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.INCORRECT_USER_EXCEPTION.getMessage()));
 
         // 봤어요 여부 체크 → 있으면 delete, 없으면 save
@@ -406,7 +406,7 @@ public class MovieService {
     public MovieBWLHListResponseDTO getMovieWatched(Long memberId, int page, int size) {
 
         // 회원 검증
-        if (!memberRepository.existsById(memberId)) {
+        if (!memberRepository.existsByIdAndIsDeletedFalse(memberId)) {
             throw new BadRequestException(ErrorStatus.INCORRECT_USER_EXCEPTION.getMessage());
         }
 
@@ -444,7 +444,7 @@ public class MovieService {
         // 영화와 회원 조회
         Movie movie = movieRepository.findById(movieLikeHateRequestDTO.getMovieId())
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_MOVIE_EXCEPTION.getMessage()));
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.INCORRECT_USER_EXCEPTION.getMessage()));
 
         LikeHateType requested = movieLikeHateRequestDTO.getLikeHateType();
@@ -498,7 +498,7 @@ public class MovieService {
     @Transactional(readOnly = true)
     public MovieBWLHListResponseDTO getMovieLike(Long memberId, int page, int size) {
 
-        if (!memberRepository.existsById(memberId)) {
+        if (!memberRepository.existsByIdAndIsDeletedFalse(memberId)) {
             throw new BadRequestException(ErrorStatus.INCORRECT_USER_EXCEPTION.getMessage());
         }
 

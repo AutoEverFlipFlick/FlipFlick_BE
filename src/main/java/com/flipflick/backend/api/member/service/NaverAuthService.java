@@ -74,7 +74,7 @@ public class NaverAuthService {
     }
 
     public Member getOrRegisterUser(NaverUserInfo userInfo) {
-        Optional<Member> memberOpt = memberRepository.findBySocialId(userInfo.getId());
+        Optional<Member> memberOpt = memberRepository.findBySocialIdAndIsDeletedFalse(userInfo.getId());
         if (memberOpt.isPresent()) return memberOpt.get();
 
         String randomEmail = "naver-" + userInfo.getId() + "@naveer.com";
@@ -84,7 +84,7 @@ public class NaverAuthService {
                 .nickname(null)
                 .socialType("NAVER")
                 .block(0)
-                .isDeleted(0)
+                .isDeleted(false)
                 .socialId(userInfo.getId())
                 .role(Role.ROLE_USER)
                 .build();

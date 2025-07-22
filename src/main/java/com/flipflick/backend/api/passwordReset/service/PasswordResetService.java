@@ -27,7 +27,7 @@ public class PasswordResetService {
 
     // 1. 인증 코드 생성 및 이메일 발송
     public void sendResetLink(String email) {
-        Member member = memberRepository.findByEmail(email)
+        Member member = memberRepository.findByEmailAndIsDeletedFalse(email)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.EMAIL_NOT_FOUND.getMessage()));
 
         String code = UUID.randomUUID().toString().replace("-", "");
@@ -64,7 +64,7 @@ public class PasswordResetService {
             throw new BadRequestException(ErrorStatus.PASSWORD_RESET_ALREADY_USED.getMessage());
         }
 
-        Member member = memberRepository.findByEmail(reset.getEmail())
+        Member member = memberRepository.findByEmailAndIsDeletedFalse(reset.getEmail())
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         member.changePassword(passwordEncoder.encode(newPassword));

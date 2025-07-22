@@ -10,6 +10,6 @@ import java.util.List;
 public interface DebateCommentRepository extends JpaRepository<DebateComment,Long> {
     List<DebateComment> findByDebateIdAndIsDeletedFalseOrderByCreatedAtAsc(Long debateId);
 
-    @Query("SELECT COUNT(dc) FROM DebateComment dc WHERE dc.debate.id = :debateId AND dc.isDeleted = false")
+    @Query("SELECT COUNT(dc) FROM DebateComment dc WHERE dc.debate.id = :debateId AND dc.isDeleted = false AND dc.member.isDeleted = false ")
     int countByDebateId(@Param("debateId") Long debateId);
 }

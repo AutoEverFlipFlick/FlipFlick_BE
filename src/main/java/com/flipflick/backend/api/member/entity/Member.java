@@ -57,7 +57,10 @@ public class Member extends BaseTimeEntity {
     @Builder.Default
     private Integer blockCount = 0;
 
-    private Integer isDeleted;
+    @Column(name = "is_deleted")
+    @Builder.Default
+    private Boolean isDeleted = false;
+
     private LocalDateTime deleteDate;
 
     @Enumerated(EnumType.STRING)
@@ -114,6 +117,11 @@ public class Member extends BaseTimeEntity {
         );
 
         return gradeOrder.getOrDefault(newGrade, 0) > gradeOrder.getOrDefault(previousGrade, 0);
+    }
+
+    public void softDelete() {
+        this.isDeleted = true;
+        this.deleteDate = LocalDateTime.now();
     }
 
     private void calculatePopcornScore() {
