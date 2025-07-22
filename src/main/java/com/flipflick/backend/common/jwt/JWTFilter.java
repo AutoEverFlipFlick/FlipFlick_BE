@@ -22,6 +22,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class JWTFilter extends OncePerRequestFilter {
@@ -82,16 +83,29 @@ public class JWTFilter extends OncePerRequestFilter {
                 .orElseThrow(() -> new BadRequestException(ErrorStatus.NOT_REGISTER_USER_EXCEPTION.getMessage()));
 
         if (member.getBlock() == 2) {
-            throw new BaseException(ErrorStatus.MEMBER_BLOCKED.getHttpStatus(),ErrorStatus.MEMBER_BLOCKED.getMessage());
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("application/json;charset=UTF-8");
+            PrintWriter writer = response.getWriter();
+            writer.write("{\"message\": \"" + ErrorStatus.MEMBER_BLOCKED.getMessage() + "\"}");
+            writer.flush();
+            return;
         }
 
         if (member.getBlock() == 1) {
-            if (member.getBlockDate().plusDays(7).isBefore(LocalDateTime.now())) {
-                // 7일 지났으면 해제
+            LocalDateTime unblockDate = member.getBlockDate().plusDays(7);
+
+            if (unblockDate.isBefore(LocalDateTime.now())) {
                 member.unblock();
             } else {
-                // 아직 7일 안 지났으면 예외
-                throw new BaseException(ErrorStatus.MEMBER_SUSPENDED.getHttpStatus(), ErrorStatus.MEMBER_SUSPENDED.getMessage());
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+                String formattedDate = unblockDate.format(formatter);
+
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json;charset=UTF-8");
+                PrintWriter writer = response.getWriter();
+                writer.write("{\"message\": \"정지된 회원입니다. 해제일: " + formattedDate + "\"}");
+                writer.flush();
+                return;
             }
         }
 

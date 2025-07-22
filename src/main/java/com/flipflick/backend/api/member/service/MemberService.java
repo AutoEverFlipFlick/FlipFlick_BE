@@ -5,6 +5,7 @@ import com.flipflick.backend.api.member.dto.*;
 import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.repository.MemberRepository;
 import com.flipflick.backend.common.exception.BadRequestException;
+import com.flipflick.backend.common.exception.BaseException;
 import com.flipflick.backend.common.exception.NotFoundException;
 import com.flipflick.backend.common.exception.UnauthorizedException;
 import com.flipflick.backend.common.jwt.JWTUtil;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
@@ -57,6 +60,25 @@ public class MemberService {
         // 2. 비밀번호 검증
         if (!passwordEncoder.matches(requestDto.getPassword(), member.getPassword())) {
             throw new BadRequestException(ErrorStatus.INVALID_PASSWORD_EXCEPTION.getMessage());
+        }
+
+        // 2.5. 정지/차단 상태 확인
+        if (member.getBlock() == 2) {
+            throw new BaseException(ErrorStatus.MEMBER_BLOCKED.getHttpStatus(), ErrorStatus.MEMBER_BLOCKED.getMessage());
+        }
+
+        if (member.getBlock() == 1) {
+            LocalDateTime unblockDate = member.getBlockDate().plusDays(7);
+            if (member.getBlockDate().plusDays(7).isBefore(LocalDateTime.now())) {
+                member.unblock();
+            } else {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+                String formattedDate = unblockDate.format(formatter);
+                throw new BaseException(
+                        ErrorStatus.MEMBER_SUSPENDED.getHttpStatus(),
+                        "정지된 회원입니다. 해제일: " + formattedDate
+                );
+            }
         }
 
         // 3. JWT 생성
