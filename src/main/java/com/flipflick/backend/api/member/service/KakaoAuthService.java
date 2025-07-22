@@ -4,7 +4,9 @@ import com.flipflick.backend.api.member.dto.*;
 import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.entity.Role;
 import com.flipflick.backend.api.member.repository.MemberRepository;
+import com.flipflick.backend.common.exception.BaseException;
 import com.flipflick.backend.common.jwt.JWTUtil;
+import com.flipflick.backend.common.response.ErrorStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -13,6 +15,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -93,6 +97,25 @@ public class KakaoAuthService {
         KakaoUserInfo userInfo = getUserInfo(accessToken);
 
         Member member = getOrRegisterUser(userInfo);
+
+
+        if (member.getBlock() == 2) {
+            throw new BaseException(ErrorStatus.MEMBER_BLOCKED.getHttpStatus(), ErrorStatus.MEMBER_BLOCKED.getMessage());
+        }
+
+        if (member.getBlock() == 1) {
+            LocalDateTime unblockDate = member.getBlockDate().plusDays(7);
+            if (member.getBlockDate().plusDays(7).isBefore(LocalDateTime.now())) {
+                member.unblock();
+            } else {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+                String formattedDate = unblockDate.format(formatter);
+                throw new BaseException(
+                        ErrorStatus.MEMBER_SUSPENDED.getHttpStatus(),
+                        "정지된 회원입니다. 해제일: " + formattedDate
+                );
+            }
+        }
 
         String jwtAccessToken = jwtUtil.createJwt("access", member.getId(), member.getRole().name(), 1000 * 60 * 30L);
         String jwtRefreshToken = jwtUtil.createJwt("refresh", member.getId(), member.getRole().name(), 1000L * 60 * 60 * 24 * 7);
