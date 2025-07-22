@@ -55,7 +55,8 @@ public class SecurityConfig {
                 "http://localhost:5173",
                 "http://localhost:8080",
                 "https://www.flipflick.life",
-                "http://localhost:5000"
+                "http://localhost:5000",
+                "https://api.flipflick.life"
         ));
         corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
         corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
