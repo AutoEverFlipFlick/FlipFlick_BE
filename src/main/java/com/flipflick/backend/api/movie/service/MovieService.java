@@ -16,13 +16,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,6 +42,9 @@ public class MovieService {
     @Value("${tmdb.api.image-base-url}")
     private String imageBaseUrl;
 
+    @Value("${kobis.api.key}")
+    private String kobisKey;
+
     private final WebClient tmdbWebClient;
     private final MovieRepository movieRepository;
     private final GenreRepository genreRepository;
@@ -48,6 +54,8 @@ public class MovieService {
     private final WatchedRepository watchedRepository;
     private final MovieLikeHateRepository movieLikeHateRepository;
     private final MoviePopcornScoreService moviePopcornScoreService;
+    private final WebClient kobisClient;
+    private final RedisTemplate<String,Object> redis;
 
     // 영화 상세 조회 메서드(DB에 영화데이터가 없으면 TMDB호출 및 저장후 반환)
     @Transactional
@@ -545,6 +553,81 @@ public class MovieService {
     @Transactional
     public void manualRecalculatePopcornScores() {
         moviePopcornScoreService.recalculateAllPopcornScores();
+    }
+
+    // 박스오피스 TOP10 조회
+    public BoxOfficeResponseDTO getYesterdayBoxOffice(String today) {
+        String cacheKey = "boxoffice:" + today;
+
+        // 캐시 체크
+        var cached = redis.opsForValue().get(cacheKey);
+        if (cached != null) {
+            return (BoxOfficeResponseDTO) cached;
+        }
+
+        // 어제 날짜 계산
+        LocalDate date = LocalDate.parse(today);
+        String targetDt = date.minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+        // KOBIS 호출
+        String kobisUrl = "/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json";
+        JsonNode kobisRoot = kobisClient.get()
+                .uri(uri -> uri
+                        .path(kobisUrl)
+                        .queryParam("key", kobisKey)
+                        .queryParam("targetDt", targetDt)
+                        .build())
+                .retrieve().bodyToMono(JsonNode.class).block();
+
+        List<JsonNode> list = kobisRoot
+                .path("boxOfficeResult")
+                .path("dailyBoxOfficeList")
+                .elements()
+                .hasNext()
+                ? StreamSupport.stream(
+                        kobisRoot
+                                .path("boxOfficeResult")
+                                .path("dailyBoxOfficeList")
+                                .spliterator(), false)
+                .limit(10)
+                .collect(Collectors.toList())
+                : List.of();
+
+        // TMDb 매핑
+        List<BoxOfficeMovieDTO> result = new ArrayList<>();
+        for (JsonNode item : list) {
+            String name = item.get("movieNm").asText();
+            int rank  = item.get("rank").asInt();
+            int year  = Integer.parseInt(item.get("openDt").asText().substring(0,4));
+
+            JsonNode search = tmdbWebClient.get()
+                    .uri(uri -> uri
+                            .path("/search/movie")
+                            .queryParam("api_key", apiKey)
+                            .queryParam("language", "ko-KR")
+                            .queryParam("query", name)
+                            .queryParam("year", year)
+                            .build())
+                    .retrieve().bodyToMono(JsonNode.class).block();
+
+            JsonNode first = search.path("results").isArray() && search.path("results").size()>0
+                    ? search.path("results").get(0)
+                    : null;
+            if (first == null) continue;
+
+            Long tmdbId = first.get("id").asLong();
+            String posterPath = first.path("poster_path").isNull()
+                    ? null
+                    : imageBaseUrl + first.get("poster_path").asText();
+
+            result.add(new BoxOfficeMovieDTO(tmdbId, posterPath, name, rank));
+        }
+
+        BoxOfficeResponseDTO boxOfficeResponseDTO = new BoxOfficeResponseDTO(result);
+        // Redis에 캐싱 (TTL: 24시간)
+        redis.opsForValue().set(cacheKey, boxOfficeResponseDTO, Duration.ofHours(24));
+
+        return boxOfficeResponseDTO;
     }
 
 }

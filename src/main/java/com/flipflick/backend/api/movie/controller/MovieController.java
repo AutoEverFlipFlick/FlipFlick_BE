@@ -134,4 +134,13 @@ public class MovieController {
         movieService.manualRecalculatePopcornScores();
         return ApiResponse.success(SuccessStatus.SEND_RECOMMENDATION_SUCCESS, "Popcorn 점수 재계산이 완료되었습니다.");
     }
+
+    @Operation(summary = "박스오피스 TOP10 조회 API", description = "박스오피스에서 TOP10영화를 조회하여 반환합니다.")
+    @GetMapping("/boxoffice")
+    public ResponseEntity<ApiResponse<BoxOfficeResponseDTO>> getBoxOffice(
+            @RequestParam @Parameter(description="오늘 날짜(YYYY-MM-DD)") String today) {
+
+        BoxOfficeResponseDTO boxOfficeResponseDTO = movieService.getYesterdayBoxOffice(today);
+        return ApiResponse.success(SuccessStatus.SEND_TODAY_MOVIE_SUCCESS, boxOfficeResponseDTO);
+    }
 }
