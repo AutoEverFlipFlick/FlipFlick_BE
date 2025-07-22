@@ -1,5 +1,6 @@
 package com.flipflick.backend.api.review.service;
 
+import com.flipflick.backend.api.alarm.service.AlarmService;
 import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.repository.MemberRepository;
 import com.flipflick.backend.api.movie.entity.Movie;
@@ -22,6 +23,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -32,6 +35,7 @@ public class ReviewService {
     private final ReviewLikeHateRepository reviewLikeHateRepository;
     private final MemberRepository memberRepository;
     private final MovieRepository movieRepository;
+    private final AlarmService alarmService;
 
     // 1. 리뷰 작성
     @Transactional
@@ -64,6 +68,12 @@ public class ReviewService {
 
         // 영화 평점 업데이트
         updateMovieVoteAverage(movie.getTmdbId());
+
+        try {
+            alarmService.createReviewWriteAlarmForFollowers(memberId, movie.getTitle());
+        } catch (Exception e) {
+            log.error("리뷰 작성 알림 전송 실패 - 사용자: {}, 영화: {}", member.getNickname(), movie.getTitle(), e);
+        }
 
         return ReviewResponseDto.Create.builder()
                 .reviewId(review.getId())
@@ -180,6 +190,9 @@ public class ReviewService {
 
                 updateReviewLikeHateCount(review, type, true); // 새로운 것 증가
                 message = type == LikeHateType.LIKE ? "좋아요로 변경되었습니다." : "싫어요로 변경되었습니다.";
+                if(type==LikeHateType.LIKE){
+                    alarmService.createAlarm(review.getMember().getId(),"내가 쓴 리뷰에 좋아요가 달렸습니다.");
+                }
             }
         } else {
             // 새로 추가
@@ -192,6 +205,9 @@ public class ReviewService {
 
             updateReviewLikeHateCount(review, type, true);
             message = type == LikeHateType.LIKE ? "좋아요가 추가되었습니다." : "싫어요가 추가되었습니다.";
+            if(type==LikeHateType.LIKE){
+                alarmService.createAlarm(review.getMember().getId(),"내가 쓴 리뷰에 좋아요가 달렸습니다.");
+            }
         }
 
         return ReviewResponseDto.LikeHate.builder()
@@ -214,6 +230,18 @@ public class ReviewService {
 
         Page<ReviewResponseDto.Detail> detailPage = reviewPage.map(this::convertToDetail);
         return ReviewResponseDto.PageResponse.from(detailPage);
+    }
+
+    // 11. 내 리뷰 조회 (존재 여부 포함)
+    public ReviewResponseDto.MyReview getMyReviewWithStatus(Long memberId, Long tmdbId) {
+        Optional<Review> reviewOpt = reviewRepository.findByMemberIdAndMovieTmdbIdAndIsDeletedFalse(memberId, tmdbId);
+
+        if (reviewOpt.isPresent()) {
+            ReviewResponseDto.Detail detail = convertToDetail(reviewOpt.get());
+            return ReviewResponseDto.MyReview.of(true, detail);
+        } else {
+            return ReviewResponseDto.MyReview.of(false, null);
+        }
     }
 
     // 별점 유효성 체크 (0.5 단위)
@@ -250,6 +278,8 @@ public class ReviewService {
             }
         }
     }
+
+
 
     // Review 엔티티를 Detail DTO로 변환
     private ReviewResponseDto.Detail convertToDetail(Review review) {

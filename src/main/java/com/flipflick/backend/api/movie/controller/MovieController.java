@@ -6,12 +6,15 @@ import com.flipflick.backend.common.config.security.SecurityMember;
 import com.flipflick.backend.common.response.ApiResponse;
 import com.flipflick.backend.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -107,5 +110,37 @@ public class MovieController {
 
         MovieBWLHListResponseDTO movieBWLHListResponseDTO = movieService.getMovieLike(userId, page, size);
         return ApiResponse.success(SuccessStatus.SEND_MOVIE_LIKE_LIST_SUCCESS, movieBWLHListResponseDTO);
+    }
+
+    @Operation(summary = "Popcorn 점수 TOP 영화 조회", description = "Popcorn 점수 기준 상위 영화 목록을 조회합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공")
+    })
+    @GetMapping("/top-popcorn")
+    public ResponseEntity<ApiResponse<List<MovieBWLHResponseDTO>>> getTopMoviesByPopcornScore(
+            @Parameter(description = "조회할 영화 수", example = "10")
+            @RequestParam(defaultValue = "10") int limit) {
+
+        List<MovieBWLHResponseDTO> result = movieService.getTopMoviesByPopcornScore(limit);
+        return ApiResponse.success(SuccessStatus.GET_MOVIE_SUCCESS, result);
+    }
+
+    @Operation(summary = "Popcorn 점수 수동 재계산", description = "관리자용: Popcorn 점수를 수동으로 재계산합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "재계산 완료")
+    })
+    @PostMapping("/admin/recalculate-popcorn")
+    public ResponseEntity<ApiResponse<String>> manualRecalculatePopcornScores() {
+        movieService.manualRecalculatePopcornScores();
+        return ApiResponse.success(SuccessStatus.SEND_RECOMMENDATION_SUCCESS, "Popcorn 점수 재계산이 완료되었습니다.");
+    }
+
+    @Operation(summary = "박스오피스 TOP10 조회 API", description = "박스오피스에서 TOP10영화를 조회하여 반환합니다.")
+    @GetMapping("/boxoffice")
+    public ResponseEntity<ApiResponse<BoxOfficeResponseDTO>> getBoxOffice(
+            @RequestParam @Parameter(description="오늘 날짜(YYYY-MM-DD)") String today) {
+
+        BoxOfficeResponseDTO boxOfficeResponseDTO = movieService.getYesterdayBoxOffice(today);
+        return ApiResponse.success(SuccessStatus.SEND_TODAY_MOVIE_SUCCESS, boxOfficeResponseDTO);
     }
 }

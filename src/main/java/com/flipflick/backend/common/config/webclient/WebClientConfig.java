@@ -25,4 +25,11 @@ public class WebClientConfig {
                 .exchangeStrategies(strategies)
                 .build();
     }
+
+    @Bean
+    public WebClient kobisClient() {
+        return WebClient.builder()
+                .baseUrl("https://www.kobis.or.kr")
+                .build();
+    }
 }

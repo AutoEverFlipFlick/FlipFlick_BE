@@ -119,4 +119,22 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             @Param("excludeMemberId") Long excludeMemberId,
             @Param("minRating") Double minRating,
             Pageable pageable);
+
+    /**
+     * 전체 평균 평점 조회
+     */
+    @Query("SELECT AVG(r.star) FROM Review r WHERE r.isDeleted = false")
+    Double findGlobalAverageRating();
+
+    /**
+     * 특정 영화의 리뷰 수 조회
+     */
+    @Query("SELECT COUNT(r) FROM Review r WHERE r.movie.id = :movieId AND r.isDeleted = false")
+    Long countReviewsByMovieId(@Param("movieId") Long movieId);
+
+    /**
+     * 특정 영화의 평균 평점 조회
+     */
+    @Query("SELECT AVG(r.star) FROM Review r WHERE r.movie.id = :movieId AND r.isDeleted = false")
+    Double findAverageRatingByMovieId(@Param("movieId") Long movieId);
 }

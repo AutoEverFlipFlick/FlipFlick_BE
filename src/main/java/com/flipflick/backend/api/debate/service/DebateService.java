@@ -1,9 +1,11 @@
 package com.flipflick.backend.api.debate.service;
 
+import com.flipflick.backend.api.alarm.service.AlarmService;
 import com.flipflick.backend.api.debate.dto.DebateRequestDto;
 import com.flipflick.backend.api.debate.dto.DebateResponseDto;
 import com.flipflick.backend.api.debate.entity.Debate;
 import com.flipflick.backend.api.debate.entity.DebateLikeHate;
+import com.flipflick.backend.api.debate.repository.DebateCommentRepository;
 import com.flipflick.backend.api.debate.repository.DebateLikeHateRepository;
 import com.flipflick.backend.api.debate.repository.DebateRepository;
 import com.flipflick.backend.api.member.entity.Member;
@@ -32,6 +34,8 @@ public class DebateService {
     private final DebateLikeHateRepository debateLikeHateRepository;
     private final MemberRepository memberRepository;
     private final MovieRepository movieRepository;
+    private final AlarmService alarmService;
+    private final DebateCommentRepository debateCommentRepository;
 
     // 1. 토론 작성
     @Transactional
@@ -54,6 +58,12 @@ public class DebateService {
                 .build();
 
         debate = debateRepository.save(debate);
+
+        try {
+            alarmService.createDebateWriteAlarmForFollowers(memberId, request.getDebateTitle());
+        } catch (Exception e) {
+            log.error("토론 작성 알림 전송 실패 - 사용자: {}, 제목: {}", member.getNickname(), request.getDebateTitle(), e);
+        }
 
         return DebateResponseDto.DebateCreate.builder()
                 .debateId(debate.getId())
@@ -160,6 +170,9 @@ public class DebateService {
 
                 updateDebateLikeHateCount(debate, type, true); // 새로운 것 증가
                 message = type == LikeHateType.LIKE ? "좋아요로 변경되었습니다." : "싫어요로 변경되었습니다.";
+                if(type == LikeHateType.LIKE){
+                    alarmService.createAlarm(debate.getMember().getId(),"'"+debate.getDebateTitle()+"에 좋아요가 달렸습니다.");
+                }
             }
         } else {
             // 새로 추가
@@ -172,6 +185,9 @@ public class DebateService {
 
             updateDebateLikeHateCount(debate, type, true);
             message = type == LikeHateType.LIKE ? "좋아요가 추가되었습니다." : "싫어요가 추가되었습니다.";
+            if(type == LikeHateType.LIKE){
+                alarmService.createAlarm(debate.getMember().getId(),"'"+debate.getDebateTitle()+"에 좋아요가 달렸습니다.");
+            }
         }
 
         return DebateResponseDto.DebateLikeHate.builder()
@@ -215,6 +231,7 @@ public class DebateService {
 
     // Debate 엔티티를 Detail DTO로 변환 (목록 조회용)
     private DebateResponseDto.DebateDetail convertToDetail(Debate debate) {
+        int commentCount = debateCommentRepository.countByDebateId(debate.getId());
         return DebateResponseDto.DebateDetail.builder()
                 .debateId(debate.getId())
                 .memberId(debate.getMember().getId())
@@ -230,6 +247,7 @@ public class DebateService {
                 .popcorn(debate.getMember().getPopcorn())
                 .movieTitle(debate.getMovie().getTitle())
                 .tmdbId(debate.getMovie().getTmdbId())
+                .commentCount(commentCount)
                 .build();
     }
 

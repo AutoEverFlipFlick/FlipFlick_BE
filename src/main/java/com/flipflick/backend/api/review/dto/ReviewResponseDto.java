@@ -186,4 +186,27 @@ public class ReviewResponseDto {
         @Schema(description = "현재 싫어요 수", example = "2")
         private Long hateCnt;
     }
+
+    // ...existing code...
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "내 리뷰 조회 응답")
+    public static class MyReview {
+
+        @Schema(description = "리뷰 존재 여부", example = "true")
+        private Boolean hasReview;
+
+        @Schema(description = "리뷰 상세 정보 (없으면 null)")
+        private Detail review;
+
+        public static MyReview of(boolean hasReview, Detail review) {
+            return MyReview.builder()
+                    .hasReview(hasReview)
+                    .review(review)
+                    .build();
+        }
+    }
 }

@@ -131,4 +131,18 @@ public class ReviewController {
         ReviewResponseDto.LikeHate result = reviewService.toggleLikeHate(securityMember.getId(), request);
         return ApiResponse.success(SuccessStatus.SEND_REVIEW_LIKE_HATE_SUCCESS, result);
     }
+
+    @Operation(summary = "내 리뷰 조회", description = "특정 영화에 작성한 내 리뷰를 존재 여부와 함께 조회합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공")
+    })
+    @GetMapping("/movie/{tmdbId}/my/status")
+    public ResponseEntity<ApiResponse<ReviewResponseDto.MyReview>> getMyReviewWithStatus(
+            @AuthenticationPrincipal SecurityMember securityMember,
+            @Parameter(description = "영화 TMDB ID", example = "550")
+            @PathVariable Long tmdbId) {
+
+        ReviewResponseDto.MyReview result = reviewService.getMyReviewWithStatus(securityMember.getId(), tmdbId);
+        return ApiResponse.success(SuccessStatus.GET_REVIEW_SUCCESS, result);
+    }
 }
