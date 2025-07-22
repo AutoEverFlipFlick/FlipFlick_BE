@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -32,11 +33,15 @@ public class DebateCommentController {
         return ApiResponse.success_only(SuccessStatus.SEND_DEBATE_COMMENT_CREATE_SUCCESS);
     }
 
-    @Operation(summary = "댓글 목록 조회 API", description = "해당되는 토론의 댓글 목록 조회")
+
+
     @GetMapping("/{debateId}")
-    public ResponseEntity<ApiResponse<List<DebateCommentResponseDto>>> getComments(@PathVariable Long debateId) {
-        List<DebateCommentResponseDto> debateCommentResponseDtos = debateCommentService.getComments(debateId);
-        return ApiResponse.success(SuccessStatus.SEND_DEBATE_COMMENT_CREATE_SUCCESS, debateCommentResponseDtos);
+    public ResponseEntity<ApiResponse<Page<DebateCommentResponseDto>>> getComments(
+            @PathVariable Long debateId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<DebateCommentResponseDto> debateComments = debateCommentService.getComments(debateId, page, size);
+        return ApiResponse.success(SuccessStatus.SEND_DEBATE_COMMENT_CREATE_SUCCESS, debateComments);
     }
 
     @Operation(summary = "댓글 삭제 API", description = "해당되는 댓글 삭제")

@@ -136,10 +136,10 @@ public class DebateService {
         Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
-        // 자신의 토론에 좋아요/싫어요 불가
-        if (debate.getMember().getId().equals(memberId)) {
-            throw new BadRequestException(ErrorStatus.DEBATE_SELF_LIKE_HATE_DENIED.getMessage());
-        }
+//
+//        if (debate.getMember().getId().equals(memberId)) {
+//            throw new BadRequestException(ErrorStatus.DEBATE_SELF_LIKE_HATE_DENIED.getMessage());
+//        }
 
         LikeHateType type = LikeHateType.valueOf(request.getType());
 
