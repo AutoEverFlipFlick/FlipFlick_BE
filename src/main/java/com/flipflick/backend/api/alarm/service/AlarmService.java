@@ -4,6 +4,7 @@ import com.flipflick.backend.api.alarm.dto.AlarmDTO;
 import com.flipflick.backend.api.alarm.entity.Alarm;
 import com.flipflick.backend.api.alarm.event.AlarmEvent;
 import com.flipflick.backend.api.alarm.repository.AlarmRepository;
+import com.flipflick.backend.api.follow.entity.Follow;
 import com.flipflick.backend.api.follow.repository.FollowRepository;
 import com.flipflick.backend.api.member.entity.Member;
 import com.flipflick.backend.api.member.repository.MemberRepository;
@@ -72,9 +73,9 @@ public class AlarmService {
             }
 
             // 2. 작성자를 팔로우하는 사용자들 조회
-            List<Member> followers = followRepository.findAllByFollowed(writer)
-                    .stream()
-                    .map(follow -> follow.getFollowing()) // 팔로워들
+            List<Follow> followList = followRepository.findAllByFollowed(writer); // Follow 리스트로 받기
+            List<Member> followers = followList.stream()
+                    .map(Follow::getFollowing) // 팔로워 Member 추출
                     .toList();
 
             if (followers.isEmpty()) {
