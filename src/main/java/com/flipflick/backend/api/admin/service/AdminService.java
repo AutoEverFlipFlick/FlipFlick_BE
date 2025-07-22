@@ -1,6 +1,7 @@
 package com.flipflick.backend.api.admin.service;
 
 import com.flipflick.backend.api.admin.dto.*;
+import com.flipflick.backend.api.alarm.service.AlarmService;
 import com.flipflick.backend.api.debate.repository.DebateCommentRepository;
 import com.flipflick.backend.api.debate.repository.DebateRepository;
 import com.flipflick.backend.api.member.dto.MemberListResponseDto;
@@ -11,6 +12,7 @@ import com.flipflick.backend.api.report.repository.ReportRepository;
 import com.flipflick.backend.api.review.repository.ReviewRepository;
 import com.flipflick.backend.common.exception.BadRequestException;
 import com.flipflick.backend.common.exception.NotFoundException;
+import com.flipflick.backend.common.response.AlarmMessage;
 import com.flipflick.backend.common.response.ErrorStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,6 +34,7 @@ public class AdminService {
     private final ReportRepository reportRepository;
     private final DebateRepository debateRepository;
     private final DebateCommentRepository debateCommentRepository;
+    private final AlarmService alarmService;
 
     public DashboardStatResponseDto getDashboardStats() {
         Map<String, Map<String, List<TimeSeriesData>>> stats = new HashMap<>();
@@ -181,17 +184,21 @@ public class AdminService {
         switch (status) {
             case "경고":
                 member.addWarning();
+                alarmService.createAlarm(memberId, AlarmMessage.WARN_ALARM.getMessage());
                 break;
 
             case "정지":
+                alarmService.createAlarm(memberId, AlarmMessage.SUSPEND_ALARM.getMessage());
                 member.suspend();
                 break;
 
             case "차단":
+                alarmService.createAlarm(memberId, AlarmMessage.BLOCK_ALARM.getMessage());
                 member.blockPermanently();
                 break;
 
             case "해제":
+                alarmService.createAlarm(memberId, AlarmMessage.UNBLOCK.getMessage());
                 member.unblock();
                 break;
 

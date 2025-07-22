@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "member")
@@ -79,6 +80,7 @@ public class Member extends BaseTimeEntity {
     // 프로필 이미지 변경
     public void updateProfileImage(String profileImage) { this.profileImage = profileImage;}
 
+    @Builder.Default
     @OneToMany(mappedBy = "followed")
     private List<Follow> followers = new ArrayList<>();
 
@@ -87,8 +89,31 @@ public class Member extends BaseTimeEntity {
 
     // 팝콘지수 관련 메서드들 수정
     public void updateTotalExp(Double expToAdd) {
+        String previousGrade = getPopcornGrade(this.popcorn);
         this.totalExp = this.totalExp + expToAdd;
         calculatePopcornScore();
+
+        String newGrade = getPopcornGrade(this.popcorn);
+
+        // 등급이 올라간 경우 알림 필요 여부 반환을 위한 플래그 설정
+        if (!previousGrade.equals(newGrade) && isGradeUpgrade(previousGrade, newGrade)) {
+            // 여기서는 알림 서비스를 직접 호출하지 않고, 서비스 레이어에서 처리하도록 함
+        }
+    }
+
+    private boolean isGradeUpgrade(String previousGrade, String newGrade) {
+        Map<String, Integer> gradeOrder = Map.of(
+                "옥수수 1", 1,
+                "옥수수 2", 2,
+                "옥수수 3", 3,
+                "빈 팝콘", 4,
+                "1/3 팝콘", 5,
+                "2/3 팝콘", 6,
+                "1 팝콘", 7,
+                "팝콘기계", 8
+        );
+
+        return gradeOrder.getOrDefault(newGrade, 0) > gradeOrder.getOrDefault(previousGrade, 0);
     }
 
     private void calculatePopcornScore() {

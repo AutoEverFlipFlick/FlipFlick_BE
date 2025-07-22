@@ -1,5 +1,6 @@
 package com.flipflick.backend.api.playlist.service;
 
+import com.flipflick.backend.api.alarm.service.AlarmService;
 import com.flipflick.backend.api.playlist.dto.PlayListRequestDto;
 import com.flipflick.backend.api.playlist.dto.PlayListResponseDto;
 import com.flipflick.backend.api.playlist.entity.MoviePlaylist;
@@ -34,6 +35,7 @@ public class PlayListService {
     private final PlayListBookmarkRepository playListBookmarkRepository;
     private final MoviePlaylistRepository moviePlaylistRepository;
     private final MemberRepository memberRepository;
+    private final AlarmService alarmService;
 
     // 1. 전체 플레이리스트 조회
     public PlayListResponseDto.PageResponse getAllPlayLists(String sortBy, int page, int size) {
@@ -130,6 +132,14 @@ public class PlayListService {
                     moviePlaylistRepository.save(moviePlaylist);
                 }
             }
+        }
+
+        try {
+            if (!playList.getHidden()) { // 공개 플레이리스트인 경우만
+                alarmService.createPlaylistCreateAlarmForFollowers(userId, request.getTitle());
+            }
+        } catch (Exception e) {
+            log.error("플레이리스트 생성 알림 전송 실패 - 사용자: {}, 제목: {}", member.getNickname(), request.getTitle(), e);
         }
 
         return PlayListResponseDto.Create.builder()

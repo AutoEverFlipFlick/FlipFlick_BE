@@ -1,5 +1,6 @@
 package com.flipflick.backend.api.debate.service;
 
+import com.flipflick.backend.api.alarm.service.AlarmService;
 import com.flipflick.backend.api.debate.dto.DebateCommentRequestDto;
 import com.flipflick.backend.api.debate.dto.DebateCommentResponseDto;
 import com.flipflick.backend.api.debate.entity.Debate;
@@ -24,6 +25,7 @@ public class DebateCommentService {
     private final DebateCommentRepository debateCommentRepository;
     private final DebateRepository debateRepository;
     private final MemberRepository memberRepository;
+    private final AlarmService alarmService;
 
     @Transactional
     public void addComment(Long memberId, DebateCommentRequestDto dto) {
@@ -38,6 +40,8 @@ public class DebateCommentService {
                 .debate(debate)
                 .member(member)
                 .build();
+
+        alarmService.createAlarm(debate.getMember().getId(), "'" + debate.getDebateTitle() + "'에 댓글이 달렸습니다.");
 
         debateCommentRepository.save(comment);
     }
