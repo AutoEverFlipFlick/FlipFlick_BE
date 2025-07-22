@@ -21,6 +21,8 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     Page<Follow> findAllByFollowed(Member followed, Pageable pageable);
     Page<Follow> findAllByFollowing(Member following, Pageable pageable);
 
+    List<Follow> findAllByFollowed(Member followed);
+
     // 수정: 특정 날짜 끝 시점의 팔로우 수 계산
     @Query("SELECT COUNT(f) FROM Follow f WHERE f.followed.id = :memberId " +
             "AND f.createdAt < :endOfDay")

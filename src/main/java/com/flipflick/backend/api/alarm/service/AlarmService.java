@@ -73,9 +73,9 @@ public class AlarmService {
             }
 
             // 2. 작성자를 팔로우하는 사용자들 조회
-            List<Follow> followList = followRepository.findAllByFollowed(writer); // Follow 리스트로 받기
-            List<Member> followers = followList.stream()
-                    .map(Follow::getFollowing) // 팔로워 Member 추출
+            List<Member> followers = followRepository.findAllByFollowed(writer)
+                    .stream()
+                    .map(Follow::getFollowing) // 팔로워들
                     .toList();
 
             if (followers.isEmpty()) {
