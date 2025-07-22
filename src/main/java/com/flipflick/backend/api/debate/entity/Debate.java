@@ -30,7 +30,7 @@ public class Debate extends BaseTimeEntity {
     @Column(name="debate_title",nullable = false)
     private String debateTitle;
 
-    @Lob
+    @Lob                          //@Lob
     @Column(nullable = false)
     private String content;
 
