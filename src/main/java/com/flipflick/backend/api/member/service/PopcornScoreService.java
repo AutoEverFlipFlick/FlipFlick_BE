@@ -186,7 +186,7 @@ public class PopcornScoreService {
 
     // 사용자 팝콘지수 정보 조회
     public PopcornScoreInfo getPopcornScoreInfo(Long memberId) {
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         String grade = getPopcornGrade(member.getPopcorn());
@@ -203,7 +203,7 @@ public class PopcornScoreService {
     // 수동 팝콘지수 재계산 (관리자용)
     @Transactional
     public void recalculatePopcornScore(Long memberId) {
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         //기존 등급

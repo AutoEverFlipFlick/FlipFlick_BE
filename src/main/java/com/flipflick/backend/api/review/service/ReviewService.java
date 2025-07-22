@@ -40,7 +40,7 @@ public class ReviewService {
     // 1. 리뷰 작성
     @Transactional
     public ReviewResponseDto.Create createReview(Long memberId, ReviewRequestDto.Create request) {
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         Movie movie = movieRepository.findByTmdbId(request.getTmdbId())
@@ -153,7 +153,7 @@ public class ReviewService {
         Review review = reviewRepository.findByIdAndIsDeletedFalse(request.getReviewId())
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.REVIEW_NOT_FOUND.getMessage()));
 
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         // 자신의 리뷰에 좋아요/싫어요 불가
@@ -222,7 +222,7 @@ public class ReviewService {
     // 7. 닉네임으로 리뷰 목록 조회 (최신순)
     public ReviewResponseDto.PageResponse getReviewsByNicknameLatest(String nickname, int page, int size) {
         // 닉네임으로 사용자 존재 확인
-        Member member = memberRepository.findByNickname(nickname)
+        Member member = memberRepository.findByNicknameAndIsDeletedFalse(nickname)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         Pageable pageable = PageRequest.of(page, size);

@@ -28,16 +28,16 @@ public class FollowService {
     // 팔로우
     @Transactional
     public void follow(String email, Long targetMemberId) {
-        Member following = memberRepository.findByEmail(email)
+        Member following = memberRepository.findByEmailAndIsDeletedFalse(email)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.FOLLOW_USER_INFO_NOT_FOUND.getMessage()));
-        Member followed = memberRepository.findById(targetMemberId)
+        Member followed = memberRepository.findByIdAndIsDeletedFalse(targetMemberId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.TARGET_USER_NOT_FOUND.getMessage()));
 
         if (following.equals(followed)) {
             throw new BadRequestException(ErrorStatus.SELF_FOLLOW_NOT_ALLOWED.getMessage());
         }
 
-        if (followRepository.existsByFollowingAndFollowed(following, followed)) {
+        if (followRepository.existsByFollowingAndFollowedAndBothNotDeleted(following, followed)) {
             throw new BadRequestException(ErrorStatus.FOLLOW_ALREADY_EXISTS.getMessage());
         }
 
@@ -52,12 +52,12 @@ public class FollowService {
     // 언팔로우
     @Transactional
     public void unfollow(String email, Long targetMemberId) {
-        Member following = memberRepository.findByEmail(email)
+        Member following = memberRepository.findByEmailAndIsDeletedFalse(email)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
-        Member followed = memberRepository.findById(targetMemberId)
+        Member followed = memberRepository.findByIdAndIsDeletedFalse(targetMemberId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.TARGET_USER_NOT_FOUND.getMessage()));
 
-        Follow follow = followRepository.findByFollowingAndFollowed(following, followed)
+        Follow follow = followRepository.findByFollowingAndFollowedAndBothNotDeleted(following, followed)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.FOLLOW_NOT_FOUND.getMessage()));
 
         followRepository.delete(follow);
@@ -66,49 +66,49 @@ public class FollowService {
     //팔로워 수
     @Transactional(readOnly = true)
     public long getFollowerCount(Long memberId) {
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
-        return followRepository.countByFollowed(member);
+        return followRepository.countByFollowedAndFollowingIsDeletedFalse(member);
     }
 
     //팔로잉 수
     @Transactional(readOnly = true)
     public long getFollowingCount(Long memberId) {
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
-        return followRepository.countByFollowing(member);
+        return followRepository.countByFollowingAndFollowedIsDeletedFalse(member);
     }
 
     // 팔로워
     @Transactional(readOnly = true)
     public Page<Member> getFollowers(Long memberId, int page, int size) {
-        Member followed = memberRepository.findById(memberId)
+        Member followed = memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         Pageable pageable = PageRequest.of(page, size);
-        return followRepository.findAllByFollowed(followed, pageable)
+        return followRepository.findAllByFollowedAndFollowingIsDeletedFalse(followed, pageable)
                 .map(Follow::getFollowing);
     }
 
     // 팔로잉
     @Transactional(readOnly = true)
     public Page<Member> getFollowings(Long memberId, int page, int size) {
-        Member following = memberRepository.findById(memberId)
+        Member following = memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         Pageable pageable = PageRequest.of(page, size);
-        return followRepository.findAllByFollowing(following, pageable)
+        return followRepository.findAllByFollowingAndFollowedIsDeletedFalse(following, pageable)
                 .map(Follow::getFollowed);
     }
 
     // 팔로우 여부 확인
     @Transactional(readOnly = true)
     public boolean isFollowing(String email, Long targetMemberId) {
-        Member following = memberRepository.findByEmail(email)
+        Member following = memberRepository.findByEmailAndIsDeletedFalse(email)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.FOLLOW_USER_INFO_NOT_FOUND.getMessage()));
-        Member followed = memberRepository.findById(targetMemberId)
+        Member followed = memberRepository.findByIdAndIsDeletedFalse(targetMemberId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.TARGET_USER_NOT_FOUND.getMessage()));
 
-        return followRepository.existsByFollowingAndFollowed(following, followed);
+        return followRepository.existsByFollowingAndFollowedAndBothNotDeleted(following, followed);
     }
 }

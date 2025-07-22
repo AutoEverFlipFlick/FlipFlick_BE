@@ -40,7 +40,7 @@ public class DebateService {
     // 1. 토론 작성
     @Transactional
     public DebateResponseDto.DebateCreate createDebate(Long memberId, DebateRequestDto.DebateCreate request) {
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         Movie movie = movieRepository.findByTmdbId(request.getTmdbId())
@@ -133,7 +133,7 @@ public class DebateService {
         Debate debate = debateRepository.findByIdAndIsDeletedFalse(request.getDebateId())
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.DEBATE_NOT_FOUND.getMessage()));
 
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         // 자신의 토론에 좋아요/싫어요 불가
@@ -202,7 +202,7 @@ public class DebateService {
     // 7. 닉네임으로 토론 목록 조회 (최신순)
     public DebateResponseDto.DebatePageResponse getDebatesByNicknameLatest(String nickname, int page, int size) {
         // 닉네임으로 사용자 존재 확인
-        Member member = memberRepository.findByNickname(nickname)
+        Member member = memberRepository.findByNicknameAndIsDeletedFalse(nickname)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         Pageable pageable = PageRequest.of(page, size);
@@ -326,7 +326,7 @@ public class DebateService {
     // 닉네임으로 토론 목록 조회 (인기순)
     public DebateResponseDto.DebatePageResponse getDebatesByNicknamePopularity(String nickname, int page, int size) {
         // 닉네임으로 사용자 존재 확인
-        Member member = memberRepository.findByNickname(nickname)
+        Member member = memberRepository.findByNicknameAndIsDeletedFalse(nickname)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
         Pageable pageable = PageRequest.of(page, size);

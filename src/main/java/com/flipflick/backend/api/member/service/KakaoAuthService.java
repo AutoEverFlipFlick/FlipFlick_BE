@@ -69,7 +69,7 @@ public class KakaoAuthService {
         String kakaoId = userInfo.getId(); // Long 타입
 
         // 1. 소셜 ID로 유저 찾기
-        Optional<Member> memberOpt = memberRepository.findBySocialId(kakaoId);
+        Optional<Member> memberOpt = memberRepository.findBySocialIdAndIsDeletedFalse(kakaoId);
 
         if (memberOpt.isPresent()) {
             return memberOpt.get();
@@ -86,7 +86,7 @@ public class KakaoAuthService {
                 .socialType("KAKAO")
                 .socialId(kakaoId)
                 .block(0)
-                .isDeleted(0)
+                .isDeleted(false)
                 .role(Role.ROLE_USER)
                 .build();
 

@@ -196,7 +196,7 @@ public class SearchService {
     public MemberListPageResponseDTO searchMember(SearchRequestDTO searchRequestDTO, Long currentUserId) {
 
         Pageable pageable = PageRequest.of(searchRequestDTO.getPage(), 20, Sort.by("nickname").ascending());
-        Page<Member> page = memberRepository.findByNicknameContaining(searchRequestDTO.getQuery(), pageable);
+        Page<Member> page = memberRepository.findByNicknameContainingAndIsDeletedFalse(searchRequestDTO.getQuery(), pageable);
 
         // 검색된 회원 ID 목록
         List<Long> memberIds = page.stream()
