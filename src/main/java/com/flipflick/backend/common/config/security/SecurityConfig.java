@@ -23,6 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
@@ -113,6 +114,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/debate/user/**").permitAll()
                         .requestMatchers("/api/v1/recommendation/**").permitAll()
                         .requestMatchers("/api/v1/review/user/{nickname}/latest","/api/v1/review/movie/{tmdbId}/latest","/api/v1/review/movie/{tmdbId}/popular").permitAll()
+                        .requestMatchers(GET, "/api/v1/debate/**").permitAll()
+                        .requestMatchers(GET, "/api/v1/debate/movie/**").permitAll()
+                        .requestMatchers(GET, "/api/v1/debate/comments/**").permitAll()
                         .anyRequest().authenticated()
                 );
 
