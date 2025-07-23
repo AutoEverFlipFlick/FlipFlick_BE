@@ -33,6 +33,8 @@ public class Report {
     private String content; // 신고 사유
 
     private String targetTitle; // 신고된 글 제목
+
+    @Lob
     private String targetContent; // 신고된 글 내용
 
     private Long targetEntityId; // 해당되는 신고의 entityId

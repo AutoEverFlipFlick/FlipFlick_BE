@@ -284,6 +284,7 @@ public class ReviewService {
     // Review 엔티티를 Detail DTO로 변환
     private ReviewResponseDto.Detail convertToDetail(Review review) {
         return ReviewResponseDto.Detail.builder()
+                .tmdbId(review.getMovie().getTmdbId())
                 .reviewId(review.getId())
                 .memberId(review.getMember().getId())
                 .content(review.getContent())
