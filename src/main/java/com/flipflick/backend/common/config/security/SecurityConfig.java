@@ -23,6 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
@@ -99,7 +100,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/search/movie", "/api/v1/search/cast", "/api/v1/search/playlist", "/api/v1/search/member").permitAll() // 검색 인증 허가
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/search/movie", "/api/v1/search/cast").permitAll() // 검색 인증 허가
-                        .requestMatchers("/api/v1/movie/view", "/api/v1/cast/view").permitAll() // 영화, 배우 상세 조회 인증 허가
+                        .requestMatchers("/api/v1/movie/view", "/api/v1/cast/view", "/api/v1/movie/top-popcorn").permitAll() // 영화, 배우 상세 조회 인증 허가
                         .requestMatchers("/api/v1/member/user-info", "/api/v1/member/user-info/*", "/api/v1/member/kakao", "/api/v1/member/naver", "/api/v1/member/check/nickname", "/api/v1/member/check/email").permitAll()
                         .requestMatchers("/api/v1/playlist/all","/api/v1/playlist/{playListId}", "/api/v1/playlist/**").permitAll()
                         .requestMatchers("/api/v1/s3/image").permitAll()
@@ -113,6 +114,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/debate/user/**").permitAll()
                         .requestMatchers("/api/v1/recommendation/**").permitAll()
                         .requestMatchers("/api/v1/review/user/{nickname}/latest","/api/v1/review/movie/{tmdbId}/latest","/api/v1/review/movie/{tmdbId}/popular").permitAll()
+                        .requestMatchers(GET, "/api/v1/debate/**").permitAll()
+                        .requestMatchers(GET, "/api/v1/debate/movie/**").permitAll()
+                        .requestMatchers(GET, "/api/v1/debate/comments/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

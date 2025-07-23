@@ -257,6 +257,7 @@ public class DebateService {
                 .title(debate.getMovie().getTitle())
                 .posterImg(debate.getMovie().getPosterImg())
                 .releaseDate(debate.getMovie().getReleaseDate())
+                .overview(debate.getMovie().getOverview())
                 .rating(debate.getMovie().getVoteAverage())
                 .build();
 

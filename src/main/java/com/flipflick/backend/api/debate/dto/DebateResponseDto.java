@@ -190,6 +190,10 @@ public class DebateResponseDto {
         @Schema(description = "영화 제목")
         private String title;
 
+
+        @Schema(description = "영화 오버뷰")
+        private String overview;
+
         @Schema(description = "영화 포스터 이미지")
         private String posterImg;
 
