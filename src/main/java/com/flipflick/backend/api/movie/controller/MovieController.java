@@ -122,6 +122,7 @@ public class MovieController {
             @RequestParam(defaultValue = "10") int limit) {
 
         List<MoviePopcornResponseDTO> result = movieService.getTopMoviesByPopcornScore(limit);
+
         return ApiResponse.success(SuccessStatus.GET_MOVIE_SUCCESS, result);
     }
 

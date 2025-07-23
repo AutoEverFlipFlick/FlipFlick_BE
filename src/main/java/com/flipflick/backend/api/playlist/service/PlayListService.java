@@ -38,34 +38,34 @@ public class PlayListService {
     private final AlarmService alarmService;
 
     // 1. 전체 플레이리스트 조회
-    public PlayListResponseDto.PageResponse getAllPlayLists(String sortBy, int page, int size) {
+    public PlayListResponseDto.PlaylistPageResponse getAllPlayLists(String sortBy, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<PlayList> playListPage = playListRepository.findAllByHiddenFalseAndIsDeletedFalse(sortBy, pageable);
 
         Page<PlayListResponseDto.Summary> summaryPage = playListPage.map(this::convertToSummary);
-        return PlayListResponseDto.PageResponse.from(summaryPage);
+        return PlayListResponseDto.PlaylistPageResponse.from(summaryPage);
     }
 
     // 2. 내가 찜한 플레이리스트 조회
-    public PlayListResponseDto.PageResponse getBookmarkedPlayLists(Long userId, int page, int size) {
+    public PlayListResponseDto.PlaylistPageResponse getBookmarkedPlayLists(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<PlayList> playListPage = playListRepository.findBookmarkedByUserIdAndIsDeletedFalseOrderByCreatedAtDesc(userId, pageable);
 
         Page<PlayListResponseDto.Summary> summaryPage = playListPage.map(this::convertToSummary);
-        return PlayListResponseDto.PageResponse.from(summaryPage);
+        return PlayListResponseDto.PlaylistPageResponse.from(summaryPage);
     }
 
     // 3. 내가 작성한 플레이리스트 조회
-    public PlayListResponseDto.PageResponse getMyPlayLists(Long userId, int page, int size) {
+    public PlayListResponseDto.PlaylistPageResponse getMyPlayLists(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<PlayList> playListPage = playListRepository.findByUserIdAndIsDeletedFalseOrderByCreatedAtDesc(userId, pageable);
 
         Page<PlayListResponseDto.Summary> summaryPage = playListPage.map(this::convertToSummary);
-        return PlayListResponseDto.PageResponse.from(summaryPage);
+        return PlayListResponseDto.PlaylistPageResponse.from(summaryPage);
     }
 
     // 4. 플레이리스트 상세 조회
-    public PlayListResponseDto.Detail getPlayListDetail(Long playListId, int page, int size) {
+    public PlayListResponseDto.PlaylistDetail getPlayListDetail(Long playListId, int page, int size) {
         PlayList playList = playListRepository.findByIdAndIsDeletedFalse(playListId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.PLAYLIST_NOT_FOUND.getMessage()));
 
@@ -90,7 +90,7 @@ public class PlayListService {
         // 페이지네이션 응답 생성
         PlayListResponseDto.MoviePageResponse moviePageResponse = PlayListResponseDto.MoviePageResponse.from(movieInfoPage);
 
-        return PlayListResponseDto.Detail.builder()
+        return PlayListResponseDto.PlaylistDetail.builder()
                 .playListId(playList.getId())
                 .title(playList.getTitle())
                 .nickname(playList.getMember().getNickname())
@@ -102,7 +102,7 @@ public class PlayListService {
     }
 
     // 5. 플레이리스트 생성
-    public PlayListResponseDto.Create createPlayList(Long userId, PlayListRequestDto.Create request) {
+    public PlayListResponseDto.PlaylistCreate createPlayList(Long userId, PlayListRequestDto.PlaylistCreate request) {
         Member member = memberRepository.findByIdAndIsDeletedFalse(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
@@ -142,7 +142,7 @@ public class PlayListService {
             log.error("플레이리스트 생성 알림 전송 실패 - 사용자: {}, 제목: {}", member.getNickname(), request.getTitle(), e);
         }
 
-        return PlayListResponseDto.Create.builder()
+        return PlayListResponseDto.PlaylistCreate.builder()
                 .playListId(playList.getId())
                 .title(playList.getTitle())
                 .build();
@@ -183,7 +183,7 @@ public class PlayListService {
 
     // 7. 플레이리스트 수정
     @Transactional
-    public PlayListResponseDto.Update updatePlayList(Long userId, Long playListId, PlayListRequestDto.Update request) {
+    public PlayListResponseDto.PlaylistUpdate updatePlayList(Long userId, Long playListId, PlayListRequestDto.PlaylistUpdate request) {
         Member member = memberRepository.findByIdAndIsDeletedFalse(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
@@ -257,7 +257,7 @@ public class PlayListService {
 
         Integer finalMovieCount = moviePlaylistRepository.countByPlayListId(playListId);
 
-        return PlayListResponseDto.Update.builder()
+        return PlayListResponseDto.PlaylistUpdate.builder()
                 .playListId(playListId)
                 .title(playList.getTitle())
                 .addedMovieCount(addedCount)
@@ -268,7 +268,7 @@ public class PlayListService {
 
     // 8. 플레이리스트 소프트 삭제
     @Transactional
-    public PlayListResponseDto.Delete deletePlayList(Long userId, Long playListId) {
+    public PlayListResponseDto.PlaylistDelete deletePlayList(Long userId, Long playListId) {
         Member member = memberRepository.findByIdAndIsDeletedFalse(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
 
@@ -281,18 +281,18 @@ public class PlayListService {
 
         playList.softDelete();
 
-        return PlayListResponseDto.Delete.builder()
+        return PlayListResponseDto.PlaylistDelete.builder()
                 .title(playList.getTitle())
                 .build();
     }
 
     //9. 플레이리스트 제목 검색 (페이지네이션)
-    public PlayListResponseDto.PageResponse searchPlayLists(String keyword, int page, int size) {
+    public PlayListResponseDto.PlaylistPageResponse searchPlayLists(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<PlayList> playListPage = playListRepository.searchByTitleContaining(keyword, pageable);
 
         Page<PlayListResponseDto.Summary> summaryPage = playListPage.map(this::convertToSummary);
-        return PlayListResponseDto.PageResponse.from(summaryPage);
+        return PlayListResponseDto.PlaylistPageResponse.from(summaryPage);
     }
 
     //10. 사용자 북마크 플레이리스트 조회
@@ -311,7 +311,7 @@ public class PlayListService {
     }
 
     //11. 닉네임으로 플레이리스트 조회 (최신순, 공개된 것만)
-    public PlayListResponseDto.PageResponse getPlayListsByNickname(String nickname, int page, int size) {
+    public PlayListResponseDto.PlaylistPageResponse getPlayListsByNickname(String nickname, int page, int size) {
         // 닉네임으로 사용자 존재 확인
         Member member = memberRepository.findByNicknameAndIsDeletedFalse(nickname)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
@@ -338,7 +338,7 @@ public class PlayListService {
                     .build();
         });
 
-        return PlayListResponseDto.PageResponse.from(summaryPage);
+        return PlayListResponseDto.PlaylistPageResponse.from(summaryPage);
     }
 
     // PlayList를 Summary DTO로 변환

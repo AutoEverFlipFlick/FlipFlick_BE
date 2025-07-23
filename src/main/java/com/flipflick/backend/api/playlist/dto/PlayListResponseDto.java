@@ -28,7 +28,7 @@ public class PlayListResponseDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Detail {
+    public static class PlaylistDetail {
         private Long playListId;
         private String title;
         private String nickname;
@@ -53,7 +53,7 @@ public class PlayListResponseDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Create {
+    public static class PlaylistCreate {
         private Long playListId;
         private String title;
     }
@@ -62,7 +62,7 @@ public class PlayListResponseDto {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class Update {
+    public static class PlaylistUpdate {
         private Long playListId;
         private String title;
         private Integer addedMovieCount;
@@ -74,7 +74,7 @@ public class PlayListResponseDto {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class Delete {
+    public static class PlaylistDelete {
         private String title;
     }
 
@@ -83,7 +83,7 @@ public class PlayListResponseDto {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class PageResponse {
+    public static class PlaylistPageResponse {
         private List<Summary> content;
         private int currentPage;
         private int totalPages;
@@ -93,8 +93,8 @@ public class PlayListResponseDto {
         private boolean last;
 
         // Page 객체에서 변환하는 정적 메서드
-        public static PageResponse from(Page<Summary> page) {
-            return PageResponse.builder()
+        public static PlaylistPageResponse from(Page<Summary> page) {
+            return PlaylistPageResponse.builder()
                     .content(page.getContent())
                     .currentPage(page.getNumber())
                     .totalPages(page.getTotalPages())
