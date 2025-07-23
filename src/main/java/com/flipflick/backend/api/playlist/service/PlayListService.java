@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class PlayListService {
 
     private final PlayListRepository playListRepository;
@@ -38,6 +37,7 @@ public class PlayListService {
     private final AlarmService alarmService;
 
     // 1. 전체 플레이리스트 조회
+    @Transactional(readOnly = true)
     public PlayListResponseDto.PlaylistPageResponse getAllPlayLists(String sortBy, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<PlayList> playListPage = playListRepository.findAllByHiddenFalseAndIsDeletedFalse(sortBy, pageable);
@@ -47,6 +47,7 @@ public class PlayListService {
     }
 
     // 2. 내가 찜한 플레이리스트 조회
+    @Transactional(readOnly = true)
     public PlayListResponseDto.PlaylistPageResponse getBookmarkedPlayLists(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<PlayList> playListPage = playListRepository.findBookmarkedByUserIdAndIsDeletedFalseOrderByCreatedAtDesc(userId, pageable);
@@ -56,6 +57,7 @@ public class PlayListService {
     }
 
     // 3. 내가 작성한 플레이리스트 조회
+    @Transactional(readOnly = true)
     public PlayListResponseDto.PlaylistPageResponse getMyPlayLists(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<PlayList> playListPage = playListRepository.findByUserIdAndIsDeletedFalseOrderByCreatedAtDesc(userId, pageable);
@@ -65,6 +67,7 @@ public class PlayListService {
     }
 
     // 4. 플레이리스트 상세 조회
+    @Transactional(readOnly = true)
     public PlayListResponseDto.PlaylistDetail getPlayListDetail(Long playListId, int page, int size) {
         PlayList playList = playListRepository.findByIdAndIsDeletedFalse(playListId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.PLAYLIST_NOT_FOUND.getMessage()));
@@ -102,6 +105,7 @@ public class PlayListService {
     }
 
     // 5. 플레이리스트 생성
+    @Transactional
     public PlayListResponseDto.PlaylistCreate createPlayList(Long userId, PlayListRequestDto.PlaylistCreate request) {
         Member member = memberRepository.findByIdAndIsDeletedFalse(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.USER_NOT_FOUND.getMessage()));
@@ -296,6 +300,7 @@ public class PlayListService {
     }
 
     //10. 사용자 북마크 플레이리스트 조회
+    @Transactional(readOnly = true)
     public PlayListResponseDto.BookmarkIds getBookmarkedPlayListIds(Long userId) {
         // 사용자 존재 확인
         Member member = memberRepository.findByIdAndIsDeletedFalse(userId)
@@ -311,6 +316,7 @@ public class PlayListService {
     }
 
     //11. 닉네임으로 플레이리스트 조회 (최신순, 공개된 것만)
+    @Transactional(readOnly = true)
     public PlayListResponseDto.PlaylistPageResponse getPlayListsByNickname(String nickname, int page, int size) {
         // 닉네임으로 사용자 존재 확인
         Member member = memberRepository.findByNicknameAndIsDeletedFalse(nickname)
