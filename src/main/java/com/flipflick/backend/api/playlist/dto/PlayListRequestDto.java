@@ -11,7 +11,7 @@ public class PlayListRequestDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Create {
+    public static class PlaylistCreate {
         private String title;
         private Boolean hidden;
         private java.util.List<MovieInfo> movies;
@@ -45,7 +45,7 @@ public class PlayListRequestDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Update {
+    public static class PlaylistUpdate {
         private String title;
         private Boolean hidden;
         private java.util.List<MovieInfo> movies;
