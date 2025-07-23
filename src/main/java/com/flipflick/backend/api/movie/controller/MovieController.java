@@ -117,11 +117,11 @@ public class MovieController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공")
     })
     @GetMapping("/top-popcorn")
-    public ResponseEntity<ApiResponse<List<MovieBWLHResponseDTO>>> getTopMoviesByPopcornScore(
+    public ResponseEntity<ApiResponse<List<MoviePopcornResponseDTO>>> getTopMoviesByPopcornScore(
             @Parameter(description = "조회할 영화 수", example = "10")
             @RequestParam(defaultValue = "10") int limit) {
 
-        List<MovieBWLHResponseDTO> result = movieService.getTopMoviesByPopcornScore(limit);
+        List<MoviePopcornResponseDTO> result = movieService.getTopMoviesByPopcornScore(limit);
         return ApiResponse.success(SuccessStatus.GET_MOVIE_SUCCESS, result);
     }
 
