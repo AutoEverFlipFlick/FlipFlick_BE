@@ -42,7 +42,7 @@ public class PasswordResetService {
 
         passwordResetRepository.save(reset);
 
-        String resetLink = "http://localhost:5173/reset-password-confirm?code=" + code;
+        String resetLink = "https://www.flipflick.life/reset-password-confirm?code=" + code;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
