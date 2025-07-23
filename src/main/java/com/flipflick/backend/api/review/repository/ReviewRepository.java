@@ -112,12 +112,14 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     AND r.member.id != :excludeMemberId
     AND r.star >= :minRating
     AND r.isDeleted = false
+    AND r.movie.tmdbId = :tmdbId
     ORDER BY r.star DESC, r.likeCnt DESC
     """)
-    Page<Review> findHighRatedReviewsBySimilarUsers(
+    Page<Review> findHighRatedReviewsBySimilarUsersAndTmdbId(
             @Param("similarUserIds") List<Long> similarUserIds,
             @Param("excludeMemberId") Long excludeMemberId,
             @Param("minRating") Double minRating,
+            @Param("tmdbId") Long tmdbId,
             Pageable pageable);
 
     /**

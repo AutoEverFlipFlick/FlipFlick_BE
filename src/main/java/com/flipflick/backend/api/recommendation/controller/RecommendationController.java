@@ -9,6 +9,7 @@ import com.flipflick.backend.common.config.security.SecurityMember;
 import com.flipflick.backend.common.response.ApiResponse;
 import com.flipflick.backend.common.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,14 +27,16 @@ public class RecommendationController {
     private final RecommendationService recommendationService;
     
     @Operation(summary = "유사한 성향 사용자 리뷰 조회", description = "나와 비슷한 성향의 사용자들이 작성한 리뷰를 조회합니다.")
-    @GetMapping("/similar-reviews")
+    @GetMapping("/similar-reviews/{tmdbId}")
     public ResponseEntity<ApiResponse<ReviewResponseDto.PageResponse>> getSimilarUserReviews(
             @AuthenticationPrincipal SecurityMember securityMember,
+            @Parameter(description = "영화 TMDB ID", example = "550")
+            @PathVariable Long tmdbId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         
         ReviewResponseDto.PageResponse result = recommendationService.getSimilarUserReviews(
-            securityMember.getId(), page, size);
+            securityMember.getId(), page, size, tmdbId);
         
         return ApiResponse.success(SuccessStatus.SEND_REVIEW_LIST_SUCCESS, result);
     }
