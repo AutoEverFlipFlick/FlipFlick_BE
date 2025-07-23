@@ -32,7 +32,7 @@ public class PlayListController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "전체 플레이리스트 조회 성공")
     })
     @GetMapping("/all")
-    public ResponseEntity<ApiResponse<PlayListResponseDto.PageResponse>> getAllPlayLists(
+    public ResponseEntity<ApiResponse<PlayListResponseDto.PlaylistPageResponse>> getAllPlayLists(
             @Parameter(description = "정렬 기준 (popularity: 인기순, latest: 최신순, oldest: 오래된순)", example = "popularity")
             @RequestParam(defaultValue = "popularity") String sortBy,
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
@@ -40,7 +40,7 @@ public class PlayListController {
             @Parameter(description = "페이지 크기", example = "10")
             @RequestParam(defaultValue = "10") int size) {
 
-        PlayListResponseDto.PageResponse result = playListService.getAllPlayLists(sortBy, page, size);
+        PlayListResponseDto.PlaylistPageResponse result = playListService.getAllPlayLists(sortBy, page, size);
         return ApiResponse.success(SuccessStatus.SEND_PLAYLIST_LIST_SUCCESS, result);
     }
 
@@ -49,14 +49,14 @@ public class PlayListController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "찜한 플레이리스트 조회 성공")
     })
     @GetMapping("/bookmarked")
-    public ResponseEntity<ApiResponse<PlayListResponseDto.PageResponse>> getBookmarkedPlayLists(
+    public ResponseEntity<ApiResponse<PlayListResponseDto.PlaylistPageResponse>> getBookmarkedPlayLists(
             @AuthenticationPrincipal SecurityMember securityMember,
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
             @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기", example = "10")
             @RequestParam(defaultValue = "10") int size) {
 
-        PlayListResponseDto.PageResponse result = playListService.getBookmarkedPlayLists(securityMember.getId(), page, size);
+        PlayListResponseDto.PlaylistPageResponse result = playListService.getBookmarkedPlayLists(securityMember.getId(), page, size);
         return ApiResponse.success(SuccessStatus.SEND_PLAYLIST_LIST_SUCCESS, result);
     }
 
@@ -65,14 +65,14 @@ public class PlayListController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "내 플레이리스트 조회 성공")
     })
     @GetMapping("/my")
-    public ResponseEntity<ApiResponse<PlayListResponseDto.PageResponse>> getMyPlayLists(
+    public ResponseEntity<ApiResponse<PlayListResponseDto.PlaylistPageResponse>> getMyPlayLists(
             @AuthenticationPrincipal SecurityMember securityMember,
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
             @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기", example = "10")
             @RequestParam(defaultValue = "10") int size) {
 
-        PlayListResponseDto.PageResponse result = playListService.getMyPlayLists(securityMember.getId(), page, size);
+        PlayListResponseDto.PlaylistPageResponse result = playListService.getMyPlayLists(securityMember.getId(), page, size);
         return ApiResponse.success(SuccessStatus.SEND_PLAYLIST_LIST_SUCCESS, result);
     }
 
@@ -81,7 +81,7 @@ public class PlayListController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "플레이리스트 상세 조회 성공")
     })
     @GetMapping("/{playListId}")
-    public ResponseEntity<ApiResponse<PlayListResponseDto.Detail>> getPlayListDetail(
+    public ResponseEntity<ApiResponse<PlayListResponseDto.PlaylistDetail>> getPlayListDetail(
             @Parameter(description = "플레이리스트 ID", example = "1")
             @PathVariable Long playListId,
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
@@ -89,7 +89,7 @@ public class PlayListController {
             @Parameter(description = "페이지 크기", example = "10")
             @RequestParam(defaultValue = "10") int size) {
 
-        PlayListResponseDto.Detail result = playListService.getPlayListDetail(playListId, page, size);
+        PlayListResponseDto.PlaylistDetail result = playListService.getPlayListDetail(playListId, page, size);
         return ApiResponse.success(SuccessStatus.SEND_PLAYLIST_DETAIL_SUCCESS, result);
     }
 
@@ -98,11 +98,11 @@ public class PlayListController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "플레이리스트 생성 성공")
     })
     @PostMapping("/create")
-    public ResponseEntity<ApiResponse<PlayListResponseDto.Create>> createPlayList(
+    public ResponseEntity<ApiResponse<PlayListResponseDto.PlaylistCreate>> createPlayList(
             @AuthenticationPrincipal SecurityMember securityMember,
-            @RequestBody PlayListRequestDto.Create request) {
+            @RequestBody PlayListRequestDto.PlaylistCreate request) {
 
-        PlayListResponseDto.Create result = playListService.createPlayList(securityMember.getId(), request);
+        PlayListResponseDto.PlaylistCreate result = playListService.createPlayList(securityMember.getId(), request);
         return ApiResponse.success(SuccessStatus.SEND_PLAYLIST_CREATE_SUCCESS, result);
     }
 
@@ -111,13 +111,13 @@ public class PlayListController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "플레이리스트 수정 성공")
     })
     @PutMapping("/{playListId}")
-    public ResponseEntity<ApiResponse<PlayListResponseDto.Update>> updatePlayList(
+    public ResponseEntity<ApiResponse<PlayListResponseDto.PlaylistUpdate>> updatePlayList(
             @AuthenticationPrincipal SecurityMember securityMember,
             @Parameter(description = "플레이리스트 ID", example = "1")
             @PathVariable Long playListId,
-            @RequestBody PlayListRequestDto.Update request) {
+            @RequestBody PlayListRequestDto.PlaylistUpdate request) {
 
-        PlayListResponseDto.Update result = playListService.updatePlayList(securityMember.getId(), playListId, request);
+        PlayListResponseDto.PlaylistUpdate result = playListService.updatePlayList(securityMember.getId(), playListId, request);
         return ApiResponse.success(SuccessStatus.SEND_PLAYLIST_UPDATE_SUCCESS, result);
     }
 
@@ -126,7 +126,7 @@ public class PlayListController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "플레이리스트 검색 성공")
     })
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<PlayListResponseDto.PageResponse>> searchPlayLists(
+    public ResponseEntity<ApiResponse<PlayListResponseDto.PlaylistPageResponse>> searchPlayLists(
             @Parameter(description = "검색 키워드", example = "키워드")
             @RequestParam String keyword,
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
@@ -134,7 +134,7 @@ public class PlayListController {
             @Parameter(description = "페이지 크기", example = "10")
             @RequestParam(defaultValue = "10") int size) {
 
-        PlayListResponseDto.PageResponse result = playListService.searchPlayLists(keyword, page, size);
+        PlayListResponseDto.PlaylistPageResponse result = playListService.searchPlayLists(keyword, page, size);
         return ApiResponse.success(SuccessStatus.SEND_PLAYLIST_SEARCH_SUCCESS, result);
     }
 
@@ -143,12 +143,12 @@ public class PlayListController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "플레이리스트 삭제 성공")
     })
     @DeleteMapping("/{playListId}")
-    public ResponseEntity<ApiResponse<PlayListResponseDto.Delete>> deletePlayList(
+    public ResponseEntity<ApiResponse<PlayListResponseDto.PlaylistDelete>> deletePlayList(
             @AuthenticationPrincipal SecurityMember securityMember,
             @Parameter(description = "플레이리스트 ID", example = "1")
             @PathVariable Long playListId){
 
-        PlayListResponseDto.Delete result = playListService.deletePlayList(securityMember.getId(), playListId);
+        PlayListResponseDto.PlaylistDelete result = playListService.deletePlayList(securityMember.getId(), playListId);
         return ApiResponse.success(SuccessStatus.SEND_PLAYLIST_DELETE_SUCCESS, result);
     }
 
@@ -184,7 +184,7 @@ public class PlayListController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "플레이리스트 조회 성공")
     })
     @GetMapping("/user/{nickname}")
-    public ResponseEntity<ApiResponse<PlayListResponseDto.PageResponse>> getPlayListsByNickname(
+    public ResponseEntity<ApiResponse<PlayListResponseDto.PlaylistPageResponse>> getPlayListsByNickname(
             @Parameter(description = "사용자 닉네임", example = "영화매니아")
             @PathVariable String nickname,
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
@@ -192,7 +192,7 @@ public class PlayListController {
             @Parameter(description = "페이지 크기", example = "10")
             @RequestParam(defaultValue = "10") int size) {
 
-        PlayListResponseDto.PageResponse result = playListService.getPlayListsByNickname(nickname, page, size);
+        PlayListResponseDto.PlaylistPageResponse result = playListService.getPlayListsByNickname(nickname, page, size);
         return ApiResponse.success(SuccessStatus.SEND_PLAYLIST_LIST_SUCCESS, result);
     }
 }
