@@ -533,12 +533,12 @@ public class MovieService {
      * Popcorn 점수 기준 TOP 영화 조회
      */
     @Transactional(readOnly = true)
-    public List<MoviePopcoronTopResponseDTO> getTopMoviesByPopcornScore(int limit) {
+    public List<MoviePopcornResponseDTO> getTopMoviesByPopcornScore(int limit) {
         PageRequest pageRequest = PageRequest.of(0, limit);
         Page<Movie> topMovies = movieRepository.findTopMoviesByPopcornScore(pageRequest);
 
         return topMovies.getContent().stream()
-                .map(movie -> new MoviePopcoronTopResponseDTO(
+                .map(movie -> new MoviePopcornResponseDTO(
                         movie.getTmdbId(),
                         movie.getPosterImg(),
                         movie.getTitle(),

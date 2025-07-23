@@ -13,6 +13,10 @@ import com.flipflick.backend.common.exception.BadRequestException;
 import com.flipflick.backend.common.exception.NotFoundException;
 import com.flipflick.backend.common.response.ErrorStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,13 +51,13 @@ public class DebateCommentService {
     }
 
 
-    public List<DebateCommentResponseDto> getComments(Long debateId) {
-        return debateCommentRepository.findByDebateIdAndIsDeletedFalseOrderByCreatedAtAsc(debateId)
-                .stream()
-                .map(DebateCommentResponseDto::from)
-                .toList();
+    public Page<DebateCommentResponseDto> getComments(Long debateId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createdAt"));
+        return debateCommentRepository.findByDebateIdAndIsDeletedFalse(debateId, pageable)
+                .map(DebateCommentResponseDto::from);
     }
 
+    @Transactional
     public void deleteComment(Long commentId, Long memberId) {
         DebateComment comment = debateCommentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException(ErrorStatus.COMMENT_NOT_FOUND.getMessage()));

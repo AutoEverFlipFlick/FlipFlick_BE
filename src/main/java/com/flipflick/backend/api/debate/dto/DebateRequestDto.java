@@ -23,7 +23,7 @@ public class DebateRequestDto {
         private String debateTitle;
 
         @NotBlank(message = "토론 내용은 필수입니다.")
-        @Size(min = 10, max = 1000, message = "토론는 10자 이상 1000자 이하로 작성해주세요.")
+        @Size(min = 10, max = 10000, message = "토론는 10자 이상 10000자 이하로 작성해주세요.")
         @Schema(description = "토론 내용", example = "정말 재미있는 영화였습니다.")
         private String content;
 
@@ -43,7 +43,7 @@ public class DebateRequestDto {
         private String debateTitle;
 
         @NotBlank(message = "토론 내용은 필수입니다.")
-        @Size(min = 10, max = 1000, message = "토론는 10자 이상 1000자 이하로 작성해주세요.")
+        @Size(min = 10, max = 10000, message = "토론는 10자 이상 10000자 이하로 작성해주세요.")
         @Schema(description = "토론 내용", example = "수정된 토론 내용입니다.")
         private String content;
 
