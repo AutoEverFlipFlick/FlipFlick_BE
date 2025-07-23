@@ -43,7 +43,7 @@ public class RecommendationService {
     private String pythonServerUrl;
 
     // 🎯 추가: 유사한 성향 사용자들의 리뷰 조회
-    public ReviewResponseDto.PageResponse getSimilarUserReviews(Long memberId, int page, int size) {
+    public ReviewResponseDto.PageResponse getSimilarUserReviews(Long memberId, int page, int size, Long tmdbId) {
         // 1. 캐시된 유사 사용자 목록 조회
         List<Long> similarUserIds = getSimilarUserIds(memberId);
         
@@ -60,10 +60,10 @@ public class RecommendationService {
                     .build();
         }
         
-        // 2. 유사 사용자들의 리뷰 조회 (본인 제외, 평점 4점 이상만)
+        // 2. 유사 사용자들의 리뷰 조회 (본인 제외, 평점 0.0점 이상만)
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Review> reviewPage = reviewRepository.findHighRatedReviewsBySimilarUsers(
-                similarUserIds, memberId, 4.0, pageable);
+        Page<Review> reviewPage = reviewRepository.findHighRatedReviewsBySimilarUsersAndTmdbId(
+                similarUserIds, memberId, 0.0, tmdbId, pageable);
         
         // 3. DTO 변환
         Page<ReviewResponseDto.Detail> detailPage = reviewPage.map(this::convertToDetail);
