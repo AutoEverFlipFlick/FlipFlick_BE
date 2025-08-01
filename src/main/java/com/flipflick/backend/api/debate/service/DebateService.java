@@ -24,6 +24,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -335,6 +337,35 @@ public class DebateService {
 
         Page<DebateResponseDto.DebateDetail> detailPage = debatePage.map(this::convertToDetail);
         return DebateResponseDto.DebatePageResponse.from(detailPage);
+    }
+
+    // 사용자의 토론 반응 상태 조회
+    public DebateResponseDto.UserReaction getUserReaction(Long debateId, Long userId) {
+        // 토론 존재 여부 확인
+        if (!debateRepository.existsByIdAndIsDeletedFalse(debateId)) {
+            throw new NotFoundException(ErrorStatus.DEBATE_NOT_FOUND.getMessage());
+        }
+
+        Boolean isLiked = false;
+        Boolean isHated = false;
+
+        // 사용자의 반응 조회
+        Optional<DebateLikeHate> userReaction = debateLikeHateRepository
+                .findByDebateIdAndMemberId(debateId, userId);
+
+        if (userReaction.isPresent()) {
+            DebateLikeHate likeHate = userReaction.get();
+            if (likeHate.getType() == LikeHateType.LIKE) {
+                isLiked = true;
+            } else if (likeHate.getType() == LikeHateType.HATE) {
+                isHated = true;
+            }
+        }
+
+        return DebateResponseDto.UserReaction.builder()
+                .isLiked(isLiked)
+                .isHated(isHated)
+                .build();
     }
 
 

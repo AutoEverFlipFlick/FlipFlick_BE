@@ -203,4 +203,17 @@ public class DebateResponseDto {
         @Schema(description = "영화 평점")
         private Double rating;
     }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "사용자의 토론 반응 상태")
+    public static class UserReaction {
+        @Schema(description = "현재 사용자가 좋아요를 눌렀는지", example = "true")
+        private Boolean isLiked;
+
+        @Schema(description = "현재 사용자가 싫어요를 눌렀는지", example = "false")
+        private Boolean isHated;
+    }
 }
