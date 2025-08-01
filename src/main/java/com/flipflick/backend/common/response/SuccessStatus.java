@@ -85,6 +85,7 @@ public enum SuccessStatus {
     REPORT_CREATE_SUCCESS(HttpStatus.OK,"신고 등록 성공"),
     REPORT_DELETE_SUCCESS(HttpStatus.OK,"신고 삭제 성공"),
     SEND_TODAY_MOVIE_SUCCESS(HttpStatus.OK, "오늘의 TOP10 영화 조회 성공"),
+    GET_USER_REACTION_SUCCESS(HttpStatus.OK, "사용자 반응 상태 조회에 성공했습니다."),
 
     WITHDRAW_SUCCESS(HttpStatus.OK, "회원 탈퇴 성공");
     private final HttpStatus httpStatus;

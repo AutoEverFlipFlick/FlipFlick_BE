@@ -109,4 +109,6 @@ public interface DebateRepository extends JpaRepository<Debate, Long> {
     """, nativeQuery = true)
     List<Object[]> countNewDebatesByDate(@Param("startDate") LocalDate startDate,
                                          @Param("endDate") LocalDate endDate);
+
+    boolean existsByIdAndIsDeletedFalse(Long id);
 }
