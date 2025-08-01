@@ -233,4 +233,28 @@ public class DebateController {
         DebateResponseDto.DebatePageResponse result = debateService.getDebatesByMemberAndMoviePopularity(memberId, tmdbId, page, size);
         return ApiResponse.success(SuccessStatus.SEND_DEBATE_LIST_SUCCESS, result);
     }
+
+    @Operation(summary = "사용자의 토론 반응 상태 조회", description = "현재 사용자가 특정 토론에 대한 좋아요/싫어요 상태를 조회합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "반응 상태 조회 성공")
+    })
+    @GetMapping("/{debateId}/user-reaction")
+    public ResponseEntity<ApiResponse<DebateResponseDto.UserReaction>> getUserDebateReaction(
+            @Parameter(description = "토론 ID", example = "1")
+            @PathVariable Long debateId,
+            @AuthenticationPrincipal SecurityMember securityMember) {
+
+        // 비로그인 사용자의 경우
+        if (securityMember == null) {
+            DebateResponseDto.UserReaction result = DebateResponseDto.UserReaction.builder()
+                    .isLiked(false)
+                    .isHated(false)
+                    .build();
+            return ApiResponse.success(SuccessStatus.GET_USER_REACTION_SUCCESS, result);
+        }
+
+        Long currentUserId = securityMember.getId();
+        DebateResponseDto.UserReaction result = debateService.getUserReaction(debateId, currentUserId);
+        return ApiResponse.success(SuccessStatus.GET_USER_REACTION_SUCCESS, result);
+    }
 }
